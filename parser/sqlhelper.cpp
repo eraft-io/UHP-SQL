@@ -1,5 +1,6 @@
 
 #include "sqlhelper.h"
+
 #include <iostream>
 #include <map>
 #include <string>
@@ -13,15 +14,27 @@ std::ostream& operator<<(std::ostream& os, const OperatorType& op);
 std::ostream& operator<<(std::ostream& os, const DatetimeField& op);
 
 std::string indent(uintmax_t numIndent) { return std::string(numIndent, '\t'); }
-void inprint(int64_t val, uintmax_t numIndent) { std::cout << indent(numIndent).c_str() << val << "  " << std::endl; }
-void inprint(double val, uintmax_t numIndent) { std::cout << indent(numIndent).c_str() << val << std::endl; }
-void inprint(const char* val, uintmax_t numIndent) { std::cout << indent(numIndent).c_str() << val << std::endl; }
+void inprint(int64_t val, uintmax_t numIndent) {
+  std::cout << indent(numIndent).c_str() << val << "  " << std::endl;
+}
+void inprint(double val, uintmax_t numIndent) {
+  std::cout << indent(numIndent).c_str() << val << std::endl;
+}
+void inprint(const char* val, uintmax_t numIndent) {
+  std::cout << indent(numIndent).c_str() << val << std::endl;
+}
 void inprint(const char* val, const char* val2, uintmax_t numIndent) {
   std::cout << indent(numIndent).c_str() << val << "->" << val2 << std::endl;
 }
-void inprintC(char val, uintmax_t numIndent) { std::cout << indent(numIndent).c_str() << val << std::endl; }
-void inprint(const OperatorType& op, uintmax_t numIndent) { std::cout << indent(numIndent) << op << std::endl; }
-void inprint(const ColumnType& colType, uintmax_t numIndent) { std::cout << indent(numIndent) << colType << std::endl; }
+void inprintC(char val, uintmax_t numIndent) {
+  std::cout << indent(numIndent).c_str() << val << std::endl;
+}
+void inprint(const OperatorType& op, uintmax_t numIndent) {
+  std::cout << indent(numIndent) << op << std::endl;
+}
+void inprint(const ColumnType& colType, uintmax_t numIndent) {
+  std::cout << indent(numIndent) << colType << std::endl;
+}
 void inprint(const DatetimeField& colType, uintmax_t numIndent) {
   std::cout << indent(numIndent) << colType << std::endl;
 }
@@ -97,7 +110,8 @@ void printExpression(Expr* expr, uintmax_t numIndent) {
         inprint(expr->table, numIndent + 2);
       }
       break;
-    // case kExprTableColumnRef: inprint(expr->table, expr->name, numIndent); break;
+    // case kExprTableColumnRef: inprint(expr->table, expr->name, numIndent);
+    // break;
     case kExprLiteralFloat:
       inprint(expr->fval, numIndent);
       break;
@@ -158,7 +172,8 @@ void printExpression(Expr* expr, uintmax_t numIndent) {
   }
 }
 
-void printOrderBy(const std::vector<OrderDescription*>* expr, uintmax_t numIndent) {
+void printOrderBy(const std::vector<OrderDescription*>* expr,
+                  uintmax_t numIndent) {
   if (!expr) return;
   for (const auto& order_description : *expr) {
     printExpression(order_description->expr, numIndent);
@@ -170,7 +185,8 @@ void printOrderBy(const std::vector<OrderDescription*>* expr, uintmax_t numInden
   }
 }
 
-void printSelectStatementInfo(const SelectStatement* stmt, uintmax_t numIndent) {
+void printSelectStatementInfo(const SelectStatement* stmt,
+                              uintmax_t numIndent) {
   inprint("SelectStatement", numIndent);
   inprint("Fields:", numIndent + 1);
   for (Expr* expr : *stmt->selectList) printExpression(expr, numIndent + 2);
@@ -187,7 +203,8 @@ void printSelectStatementInfo(const SelectStatement* stmt, uintmax_t numIndent) 
 
   if (stmt->groupBy != nullptr) {
     inprint("GroupBy:", numIndent + 1);
-    for (Expr* expr : *stmt->groupBy->columns) printExpression(expr, numIndent + 2);
+    for (Expr* expr : *stmt->groupBy->columns)
+      printExpression(expr, numIndent + 2);
     if (stmt->groupBy->having != nullptr) {
       inprint("Having:", numIndent + 1);
       printExpression(stmt->groupBy->having, numIndent + 2);
@@ -208,7 +225,8 @@ void printSelectStatementInfo(const SelectStatement* stmt, uintmax_t numIndent) 
           break;
       }
 
-      printSelectStatementInfo(setOperation->nestedSelectStatement, numIndent + 2);
+      printSelectStatementInfo(setOperation->nestedSelectStatement,
+                               numIndent + 2);
 
       if (setOperation->resultOrder != nullptr) {
         inprint("SetResultOrderBy:", numIndent + 1);
@@ -245,7 +263,8 @@ void printSelectStatementInfo(const SelectStatement* stmt, uintmax_t numIndent) 
   }
 }
 
-void printImportStatementInfo(const ImportStatement* stmt, uintmax_t numIndent) {
+void printImportStatementInfo(const ImportStatement* stmt,
+                              uintmax_t numIndent) {
   inprint("ImportStatement", numIndent);
   inprint(stmt->filePath, numIndent + 1);
   switch (stmt->type) {
@@ -265,7 +284,8 @@ void printImportStatementInfo(const ImportStatement* stmt, uintmax_t numIndent) 
   inprint(stmt->tableName, numIndent + 1);
 }
 
-void printExportStatementInfo(const ExportStatement* stmt, uintmax_t numIndent) {
+void printExportStatementInfo(const ExportStatement* stmt,
+                              uintmax_t numIndent) {
   inprint("ExportStatement", numIndent);
   inprint(stmt->filePath, numIndent + 1);
   switch (stmt->type) {
@@ -285,13 +305,15 @@ void printExportStatementInfo(const ExportStatement* stmt, uintmax_t numIndent) 
   inprint(stmt->tableName, numIndent + 1);
 }
 
-void printCreateStatementInfo(const CreateStatement* stmt, uintmax_t numIndent) {
+void printCreateStatementInfo(const CreateStatement* stmt,
+                              uintmax_t numIndent) {
   inprint("CreateStatement", numIndent);
   inprint(stmt->tableName, numIndent + 1);
   if (stmt->filePath) inprint(stmt->filePath, numIndent + 1);
 }
 
-void printInsertStatementInfo(const InsertStatement* stmt, uintmax_t numIndent) {
+void printInsertStatementInfo(const InsertStatement* stmt,
+                              uintmax_t numIndent) {
   inprint("InsertStatement", numIndent);
   inprint(stmt->tableName, numIndent + 1);
   if (stmt->columns != nullptr) {
@@ -313,7 +335,8 @@ void printInsertStatementInfo(const InsertStatement* stmt, uintmax_t numIndent) 
   }
 }
 
-void printTransactionStatementInfo(const TransactionStatement* stmt, uintmax_t numIndent) {
+void printTransactionStatementInfo(const TransactionStatement* stmt,
+                                   uintmax_t numIndent) {
   inprint("TransactionStatement", numIndent);
   switch (stmt->command) {
     case kBeginTransaction:
@@ -354,21 +377,21 @@ void printStatementInfo(const SQLStatement* stmt) {
 }
 
 std::ostream& operator<<(std::ostream& os, const OperatorType& op) {
-  static const std::map<const OperatorType, const std::string> operatorToToken = {
-      {kOpNone, "None"},     {kOpBetween, "BETWEEN"},
-      {kOpCase, "CASE"},     {kOpCaseListElement, "CASE LIST ELEMENT"},
-      {kOpPlus, "+"},        {kOpMinus, "-"},
-      {kOpAsterisk, "*"},    {kOpSlash, "/"},
-      {kOpPercentage, "%"},  {kOpCaret, "^"},
-      {kOpEquals, "="},      {kOpNotEquals, "!="},
-      {kOpLess, "<"},        {kOpLessEq, "<="},
-      {kOpGreater, ">"},     {kOpGreaterEq, ">="},
-      {kOpLike, "LIKE"},     {kOpNotLike, "NOT LIKE"},
-      {kOpILike, "ILIKE"},   {kOpAnd, "AND"},
-      {kOpOr, "OR"},         {kOpIn, "IN"},
-      {kOpConcat, "CONCAT"}, {kOpNot, "NOT"},
-      {kOpUnaryMinus, "-"},  {kOpIsNull, "IS NULL"},
-      {kOpExists, "EXISTS"}};
+  static const std::map<const OperatorType, const std::string> operatorToToken =
+      {{kOpNone, "None"},     {kOpBetween, "BETWEEN"},
+       {kOpCase, "CASE"},     {kOpCaseListElement, "CASE LIST ELEMENT"},
+       {kOpPlus, "+"},        {kOpMinus, "-"},
+       {kOpAsterisk, "*"},    {kOpSlash, "/"},
+       {kOpPercentage, "%"},  {kOpCaret, "^"},
+       {kOpEquals, "="},      {kOpNotEquals, "!="},
+       {kOpLess, "<"},        {kOpLessEq, "<="},
+       {kOpGreater, ">"},     {kOpGreaterEq, ">="},
+       {kOpLike, "LIKE"},     {kOpNotLike, "NOT LIKE"},
+       {kOpILike, "ILIKE"},   {kOpAnd, "AND"},
+       {kOpOr, "OR"},         {kOpIn, "IN"},
+       {kOpConcat, "CONCAT"}, {kOpNot, "NOT"},
+       {kOpUnaryMinus, "-"},  {kOpIsNull, "IS NULL"},
+       {kOpExists, "EXISTS"}};
 
   const auto found = operatorToToken.find(op);
   if (found == operatorToToken.cend()) {
@@ -379,9 +402,12 @@ std::ostream& operator<<(std::ostream& os, const OperatorType& op) {
 }
 
 std::ostream& operator<<(std::ostream& os, const DatetimeField& datetime) {
-  static const std::map<const DatetimeField, const std::string> operatorToToken = {
-      {kDatetimeNone, "None"}, {kDatetimeSecond, "SECOND"}, {kDatetimeMinute, "MINUTE"}, {kDatetimeHour, "HOUR"},
-      {kDatetimeDay, "DAY"},   {kDatetimeMonth, "MONTH"},   {kDatetimeYear, "YEAR"}};
+  static const std::map<const DatetimeField, const std::string>
+      operatorToToken = {
+          {kDatetimeNone, "None"},     {kDatetimeSecond, "SECOND"},
+          {kDatetimeMinute, "MINUTE"}, {kDatetimeHour, "HOUR"},
+          {kDatetimeDay, "DAY"},       {kDatetimeMonth, "MONTH"},
+          {kDatetimeYear, "YEAR"}};
 
   const auto found = operatorToToken.find(datetime);
   if (found == operatorToToken.cend()) {

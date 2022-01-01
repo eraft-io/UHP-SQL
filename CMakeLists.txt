@@ -91,6 +91,8 @@ if(ParentDirectory STREQUAL "")
     # )
 
     add_subdirectory(parser)
+    add_subdirectory(hiredis)
+    add_subdirectory(server)
 
 
 endif(ParentDirectory STREQUAL "")
