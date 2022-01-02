@@ -25,7 +25,7 @@ set(This uhpsqld)
 project(${This} C CXX)
 
 set(CMAKE_C_STANDARD 99)
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 enable_testing()
@@ -90,10 +90,11 @@ if(ParentDirectory STREQUAL "")
     #     FOLDER libraries
     # )
 
+    add_subdirectory(third_party/hiredis)
     add_subdirectory(parser)
-    add_subdirectory(hiredis)
+    add_subdirectory(network)
+    add_subdirectory(executor)
     add_subdirectory(server)
-
 
 endif(ParentDirectory STREQUAL "")
 
