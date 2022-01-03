@@ -1,3 +1,17 @@
+// Copyright 2022 The uhp-sql Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
 
 #include <stdlib.h>
 
@@ -22,7 +36,6 @@ Uhpsqld::Uhpsqld() : port_(0) {}
 Uhpsqld::~Uhpsqld() {}
 
 std::shared_ptr<StreamSocket> Uhpsqld::_OnNewConnection(int connfd, int tag) {
-  // new connection comming
   SocketAddr peer;
   Socket::GetPeerAddr(connfd, peer);
 
@@ -32,8 +45,8 @@ std::shared_ptr<StreamSocket> Uhpsqld::_OnNewConnection(int connfd, int tag) {
 }
 
 bool Uhpsqld::_Init() {
-  SocketAddr addr("0.0.0.0:12306");
-  uhp_sql::Executor::Init("172.17.0.2", 6379);
+  SocketAddr addr(DEMO_SERVER_ADDR);
+  uhp_sql::Executor::Init(MOCK_PMEMKV_REDIS_IP, MOCK_PMEMKV_REDIS_PORT);
 
   if (!Server::TCPBind(addr, 1)) {
     return false;

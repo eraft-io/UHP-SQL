@@ -6,5 +6,5 @@ image:
 	docker build -f Dockerfile -t $(BUILDER_IMAGE) .
 
 run:
-	docker run --user root -p 0.0.0.0:12306:12306 -it -v ${PWD}:/UHP-SQL hub.docker.com/eraftio/eraft_uhp_sql:latest /bin/bash
-
+	chmod +x run-test.sh
+	docker run --user root -p 0.0.0.0:12306:12306 -it -v ${PWD}:/UHP-SQL hub.docker.com/eraftio/eraft_uhp_sqld:latest /UHP-SQL/run-test.sh

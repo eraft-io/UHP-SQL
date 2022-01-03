@@ -47,17 +47,18 @@ bool Executor::Exec(hsql::SQLParserResult& result, Client* cli,
   UnboundedBuffer reply_;
   for (size_t i = 0u; i < result.size(); ++i) {
     switch (result.getStatement(i)->type()) {
+      // https://dev.mysql.com/doc/internals/en/protocoltext-resultset.html
       case hsql::kStmtSelect: {
         std::string res = ExecSelectStatement(
             (const hsql::SelectStatement*)result.getStatement(i), 0);
         std::cout << "run select result: " << res << "\n";
-        // 1
+        uint8_t seq = 1;
         std::vector<uint8_t> feildCountPacket;
         feildCountPacket.push_back(1);
         feildCountPacket.push_back(0);
         feildCountPacket.push_back(0);
+        feildCountPacket.push_back(seq);
         feildCountPacket.push_back(1);
-        feildCountPacket.push_back(2);
         reply_.PushData(
             std::string(feildCountPacket.begin(), feildCountPacket.end())
                 .c_str(),
@@ -65,27 +66,25 @@ bool Executor::Exec(hsql::SQLParserResult& result, Client* cli,
         cli->SendPacket(reply_);
         reply_.Clear();
 
-        // 2
-        uint8_t seq = 2;
+        seq++;
         Protocol::FieldPacket newFieldPack(
-            "col", static_cast<uint32_t>(TYPE_VARCHAR), "test", "test", "db",
-            "col", 80, CHARACTER_SET_UTF8, 0, 0);
+            "RAW DATA", static_cast<uint32_t>(TYPE_VARCHAR), "test", "test",
+            "db", "RAW DATA", 80, CHARACTER_SET_UTF8, 0, 0);
         std::vector<uint8_t> fieldPack = newFieldPack.Pack();
-        std::vector<uint8_t> outPack;
-        outPack.push_back(fieldPack.size());
-        outPack.push_back(0);
-        outPack.push_back(0);
-        outPack.push_back(seq);
-        outPack.insert(outPack.end(), fieldPack.begin(), fieldPack.end());
-        reply_.PushData(std::string(outPack.begin(), outPack.end()).c_str(),
-                        outPack.size());
+        std::vector<uint8_t> outPack4;
+        outPack4.push_back(fieldPack.size());
+        outPack4.push_back(0);
+        outPack4.push_back(0);
+        outPack4.push_back(seq);
+        outPack4.insert(outPack4.end(), fieldPack.begin(), fieldPack.end());
+        reply_.PushData(std::string(outPack4.begin(), outPack4.end()).c_str(),
+                        outPack4.size());
         cli->SendPacket(reply_);
         reply_.Clear();
 
-        // // 3
-        Protocol::EofPacket eof(1, 2);
+        seq++;
+        Protocol::EofPacket eof(0, 2);
         std::vector<uint8_t> eofPacket = eof.Pack();
-        seq++;  // 254, 0, 0, 2, 0
         std::vector<uint8_t> outPackNew;
         outPackNew.push_back(eofPacket.size());
         outPackNew.push_back(0);
@@ -95,41 +94,37 @@ bool Executor::Exec(hsql::SQLParserResult& result, Client* cli,
         reply_.PushData(
             std::string(outPackNew.begin(), outPackNew.end()).c_str(),
             outPackNew.size());
-
         cli->SendPacket(reply_);
         reply_.Clear();
 
-        // 4
         seq++;
-        std::vector<std::string> reslist;
-        reslist.push_back(res);
-        reslist.push_back(res);
-        Protocol::RowPacket rowPack(reslist);
+        std::vector<std::string> row;
+        row.push_back(res);
+        Protocol::RowPacket rowPack(row);
         std::vector<uint8_t> rowPacket = rowPack.Pack();
-        std::vector<uint8_t> outPack1;
-        outPack1.push_back(rowPacket.size());
-        outPack1.push_back(0);
-        outPack1.push_back(0);
-        outPack1.push_back(seq);
-        outPack1.insert(outPack1.end(), rowPacket.begin(), rowPacket.end());
-        reply_.PushData(std::string(outPack1.begin(), outPack1.end()).c_str(),
-                        outPack1.size());
+        std::vector<uint8_t> outPack;
+        outPack.push_back(rowPacket.size());
+        outPack.push_back(0);
+        outPack.push_back(0);
+        outPack.push_back(seq);
+        outPack.insert(outPack.end(), rowPacket.begin(), rowPacket.end());
+        reply_.PushData(std::string(outPack.begin(), outPack.end()).c_str(),
+                        outPack.size());
         cli->SendPacket(reply_);
         reply_.Clear();
 
-        // 5
         seq++;
         Protocol::EofPacket eofBack(0, 2);
         std::vector<uint8_t> eofBackPacket = eofBack.Pack();
-        std::vector<uint8_t> outPack2;
-        outPack2.push_back(eofBackPacket.size());
-        outPack2.push_back(0);
-        outPack2.push_back(0);
-        outPack2.push_back(seq);
-        outPack2.insert(outPack2.end(), eofBackPacket.begin(),
+        std::vector<uint8_t> outPack1;
+        outPack1.push_back(eofBackPacket.size());
+        outPack1.push_back(0);
+        outPack1.push_back(0);
+        outPack1.push_back(seq);
+        outPack1.insert(outPack1.end(), eofBackPacket.begin(),
                         eofBackPacket.end());
-        reply_.PushData(std::string(outPack2.begin(), outPack2.end()).c_str(),
-                        outPack2.size());
+        reply_.PushData(std::string(outPack1.begin(), outPack1.end()).c_str(),
+                        outPack1.size());
         cli->SendPacket(reply_);
         reply_.Clear();
         break;
@@ -138,7 +133,7 @@ bool Executor::Exec(hsql::SQLParserResult& result, Client* cli,
         uint64_t ret = ExecInsertStatement(
             (const hsql::InsertStatement*)result.getStatement(i), 0);
         Protocol::OkPacket okPack;
-        std::vector<uint8_t> outPut = okPack.Pack(ret, 0, 2, 1);
+        std::vector<uint8_t> outPut = okPack.Pack(ret, 0, 2, 0);
         std::vector<uint8_t> res;
         res.push_back(outPut.size());
         res.push_back(0);

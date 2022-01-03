@@ -1,10 +1,19 @@
-/**
- *  @file Greeting.hpp
- *
- *  Mysql 认证协议包 C -> S
- *
- *  Copyright © 2020 by LiuJ
- */
+// Copyright 2022 The uhp-sql Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+// !!! WARRING !!!: support mysql protocol version <= mysql-5.1.70
+//
 
 #pragma once
 
@@ -18,11 +27,11 @@ namespace Protocol {
 
 class AuthPacket {
  public:
-  ~AuthPacket() noexcept;
+  ~AuthPacket();
   AuthPacket(const AuthPacket&) = delete;
-  AuthPacket(AuthPacket&&) noexcept = delete;
+  AuthPacket(AuthPacket&&) = delete;
   AuthPacket& operator=(const AuthPacket&) = delete;
-  AuthPacket& operator=(AuthPacket&&) noexcept = delete;
+  AuthPacket& operator=(AuthPacket&&) = delete;
   AuthPacket();
   /**
    * 编码 auth 包

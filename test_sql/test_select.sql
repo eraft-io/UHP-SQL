@@ -1,1 +1,0 @@
-SELECT * FROM test where id = '1';

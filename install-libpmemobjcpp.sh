@@ -18,8 +18,7 @@ PREFIX="/usr"
 PACKAGE_TYPE=${1^^} #To uppercase
 echo "PACKAGE_TYPE: ${PACKAGE_TYPE}"
 
-# Merge pull request #927 from JanDorniak99/range_method_basic_string; 13.10.2020
-# version stable-1.13
+# this version of pmemobj support lastest version of pmemkv
 LIBPMEMOBJ_CPP_VERSION="4edbcdfb1b85276609a7f8d0811368bb48285d07"  
 echo "LIBPMEMOBJ_CPP_VERSION: ${LIBPMEMOBJ_CPP_VERSION}"
 
