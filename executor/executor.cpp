@@ -28,7 +28,8 @@ bool Executor::Init(std::string pmemRedisIp, uint16_t pmemRedisPort) {
   redisReply* reply;
   // TODO: need to configurable
   struct timeval timeout = {1, 500000};  // 1.5 seconds
-  pmemRedisContext = redisConnectWithTimeout("172.17.0.2", 6379, timeout);
+  pmemRedisContext =
+      redisConnectWithTimeout(pmemRedisIp.c_str(), pmemRedisPort, timeout);
 
   if (pmemRedisContext == NULL || pmemRedisContext->err) {
     if (pmemRedisContext) {

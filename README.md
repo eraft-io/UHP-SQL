@@ -25,6 +25,7 @@ make image
 
 #### 2.运行 UHP-SQL 实例
 ```
+make build-dev
 make run
 ```
 
