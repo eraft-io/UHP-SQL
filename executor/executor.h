@@ -19,7 +19,7 @@
 #include <string>
 
 #include "../parser/sql_parser.h"
-#include "../third_party/hiredis/hiredis.h"
+#include "../third_party/libredis/hiredis.h"
 // contains printing utilities
 #include "../network/client.h"
 #include "../network/unbounded_buffer.h"

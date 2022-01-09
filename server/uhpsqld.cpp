@@ -28,7 +28,7 @@
 #include "../network/client.h"
 #include "../network/server.h"
 #include "../network/socket.h"
-#include "../third_party/hiredis/hiredis.h"
+#include "../third_party/libredis/hiredis.h"
 #include "uhpsqld.h"
 
 Uhpsqld::Uhpsqld() : port_(0) {}
