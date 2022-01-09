@@ -90,7 +90,7 @@ if(ParentDirectory STREQUAL "")
     #     FOLDER libraries
     # )
 
-    add_subdirectory(third_party/hiredis)
+    add_subdirectory(third_party/libredis)
     add_subdirectory(parser)
     add_subdirectory(network)
     add_subdirectory(executor)
