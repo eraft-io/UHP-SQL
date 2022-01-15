@@ -36,7 +36,7 @@ ErrPacket::ErrPacket() : impl_(new Impl()) {}
 
 ErrPacket::~ErrPacket() noexcept {}
 
-// e.g 0, 10, 0, 2, 0, 0, 0
+// e.g  0, 10, 0, 2, 0, 0, 0
 std::vector<uint8_t> ErrPacket::Pack(uint16_t errorCode, std::string sqlState,
                                      std::string errorMessage) {
   impl_->header = ERR_PACKET;

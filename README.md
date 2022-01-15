@@ -42,7 +42,7 @@ mysql --host 127.0.0.1 --port 12306 -u root
 
 #### 4.读写测试
 ```
-NSERT INTO test(id, comment) VALUES (666, 'hello UHP-SQL!');
+INSERT INTO test(id, comment) VALUES (666, 'hello UHP-SQL!');
 
 SELECT * FROM test where id = '666';
 ```

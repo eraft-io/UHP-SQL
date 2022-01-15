@@ -27,6 +27,7 @@
 #include "common.h"
 #include "greeting.h"
 #include "unbounded_buffer.h"
+#include "err.h"
 // include the sql parser
 #include "../executor/executor.h"
 #include "../parser/sql_parser.h"
@@ -45,6 +46,7 @@ PacketLength Client::_HandlePacket(const char *start, std::size_t bytes) {
 
   std::string pack = std::string(start, end);
   //   std::cout << pack << std::endl;
+  std::string queryStr = std::string(start + 5, end);
 
   if (pack[3] == INIT_PACKET_CNT) {
     // 登陆认证
@@ -61,22 +63,44 @@ PacketLength Client::_HandlePacket(const char *start, std::size_t bytes) {
     return static_cast<PacketLength>(bytes);
   } else {
     // 执行命令
-    std::string queryStr = std::string(start + 5, end);
     std::cout << "query str: " << queryStr << std::endl;
-    hsql::SQLParserResult result;
+    if(queryStr != "select @@version_comment limit 1") {
+        hsql::SQLParserResult result;
 
-    hsql::SQLParser::parse(queryStr, &result);
-    if (result.isValid()) {
-      std::cout << "Parsed successfully!\n";
-      uhp_sql::Executor::Exec(result, this, pack);
+        hsql::SQLParser::parse(queryStr, &result);
+        if (result.isValid()) {
+          std::cout << "Parsed successfully!\n";
+          uhp_sql::Executor::Exec(result, this, pack);
+        } else {
+          // return parse error
+          Protocol::ErrPacket err;
+
+          std::cout << "err: " << result.errorMsg() << std::endl;
+          std::vector<uint8_t> errPack = err.Pack(50, "ABCDE", std::string(result.errorMsg()));
+          uint8_t size = errPack.size();
+          std::vector<uint8_t> returnPack;
+          returnPack.push_back(size);
+          returnPack.push_back(0);
+          returnPack.push_back(0);
+          returnPack.push_back(pack[3] + 1);
+          
+          returnPack.insert(returnPack.end(), errPack.begin(), errPack.end());
+
+          reply_.PushData(std::string(returnPack.begin(), returnPack.end()).c_str(),
+                          returnPack.size());
+          SendPacket(reply_);
+          reply_.Clear();
+
+        }
     } else {
-      std::vector<uint8_t> OkPacket = {7, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0};
-      OkPacket[3] = pack[3] + 1;
-      reply_.PushData(std::string(OkPacket.begin(), OkPacket.end()).c_str(),
-                      OkPacket.size());
-      SendPacket(reply_);
-      reply_.Clear();
+        std::vector<uint8_t> OkPacket = {7, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0};
+        OkPacket[3] = pack[3] + 1;
+        reply_.PushData(std::string(OkPacket.begin(), OkPacket.end()).c_str(),
+                        OkPacket.size());
+        SendPacket(reply_);
+        reply_.Clear();
     }
+
     return static_cast<PacketLength>(bytes);
   }
 }

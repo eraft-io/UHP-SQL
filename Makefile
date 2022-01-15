@@ -12,3 +12,7 @@ run:
 build-dev:
 	chmod +x build.sh
 	docker run --user root --rm -v ${PWD}:/UHP-SQL hub.docker.com/eraftio/eraft_uhp_sqld:latest /UHP-SQL/build.sh
+
+clean:
+	docker rm $(docker ps -a | grep Exited | awk '{print $1}')
+
