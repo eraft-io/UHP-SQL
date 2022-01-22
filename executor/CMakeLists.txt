@@ -14,4 +14,4 @@ set(executor_INCLUDE_DIR ${executor_sources_SOURCE_DIR})
 
 add_library(executor ${executor_sources})
 target_include_directories(executor PUBLIC ${executor_INCLUDE_DIR})
-target_link_libraries(executor hiredis_static parser network)
+target_link_libraries(executor hiredis_static parser network meta)

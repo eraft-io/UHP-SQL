@@ -33,4 +33,5 @@ class Client : public StreamSocket {
   void _Reset();
 
   void OnConnect() override;
+
 };

@@ -93,6 +93,7 @@ if(ParentDirectory STREQUAL "")
     add_subdirectory(third_party/libredis)
     add_subdirectory(parser)
     add_subdirectory(network)
+    add_subdirectory(meta)
     add_subdirectory(executor)
     add_subdirectory(server)
 

@@ -29,27 +29,12 @@
 namespace uhp_sql {
 
 class Executor {
+
  public:
   static bool Init(std::string pmemRedisIp, uint16_t pmemRedisPort);
 
-  // TODO: replace std:string to a real obj for network repl
   static bool Exec(hsql::SQLParserResult& result, Client* cli,
                    std::string& pack);
-
-  static std::string ExecSelectStatement(const hsql::SelectStatement* stmt,
-                                         uintmax_t numIndent);
-
-  static uint64_t ExecInsertStatement(const hsql::InsertStatement* stmt,
-                                      uintmax_t numIndent);
-
-  static std::string ExecCreateStatement(const hsql::CreateStatement* stmt,
-                                         uintmax_t numIndent);
-
-  static std::string ExecUpdateStatement(const hsql::UpdateStatement* stmt,
-                                         uintmax_t numIndent);
-
-  static std::string ExecDeleteStatement(const hsql::DeleteStatement* stmt,
-                                         uintmax_t numIndent);
 
   static bool AnalyzeCreateTableStatement(const hsql::CreateStatement* stmt,
                                           std::string& tabName,
@@ -58,9 +43,9 @@ class Executor {
   static uint64_t CreateTableMetaToPMemKV(std::string& tabName,
                                           std::vector<TableColumn>& colDefs);
 
-  static bool SendCreateTableResultToClient(Client* cli, uint8_t affectRows);
+  static void SendCreateTableResultToClient(Client* cli, uint8_t affectRows);
 
-  static bool AnalyzeSelectStatement(hsql::SelectStatement* stmt,
+  static bool AnalyzeSelectStatement(const hsql::SelectStatement* stmt,
                                      hsql::OperatorType& opType,
                                      std::string& queryTab,
                                      std::string& queryFeild,
@@ -72,7 +57,7 @@ class Executor {
       std::string& queryFeild, std::string& queryValue, uint64_t& limit,
       uint64_t& offset);
 
-  static bool SendResultToClient(
+  static bool SendResultSetToClient(
       Client* cli, std::vector<std::vector<TableColumn> >& resultSet);
 
   static bool AnalyzeInsertStatement(const hsql::InsertStatement* stmt,
@@ -115,6 +100,9 @@ class Executor {
   static bool OpenTableInPMemKV(std::string newTab);
 
   static bool DropTableInPMemKV(std::string tabName);
+
+  static void SendErrorMessageToClient(Client* cli, uint8_t seq,  uint16_t errorCode, std::string sqlState,
+                                     std::string errorMessage);
 
   Executor();
 

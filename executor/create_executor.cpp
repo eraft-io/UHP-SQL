@@ -17,7 +17,20 @@
 
 namespace uhp_sql {
 
-std::string Executor::ExecCreateStatement(const hsql::CreateStatement* stmt,
-                                          uintmax_t numIndent) {}
+
+bool Executor::AnalyzeCreateTableStatement(const hsql::CreateStatement* stmt,
+                                           std::string& tabName,
+                                           std::vector<TableColumn>& colDefs) {
+  return true;
+}
+
+uint64_t Executor::CreateTableMetaToPMemKV(std::string& tabName,
+                                           std::vector<TableColumn>& colDefs) {
+  return 0;
+}
+
+void Executor::SendCreateTableResultToClient(Client* cli, uint8_t affectRows) {
+  return;
+}
 
 }  // namespace uhp_sql

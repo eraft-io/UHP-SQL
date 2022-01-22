@@ -17,6 +17,27 @@
 
 namespace uhp_sql {
 
-std::string Executor::ExecUpdateStatement(const hsql::UpdateStatement* stmt,
-                                          uintmax_t numIndent) {}
+
+bool Executor::AnalyzeUpdateStatement(const hsql::UpdateStatement* stmt,
+                                      std::string& tabName, std::string& column,
+                                      std::string& value,
+                                      hsql::OperatorType& opType,
+                                      std::string& queryFeild,
+                                      std::string& queryValue) {
+  return true;
+}
+
+uint64_t Executor::UpdateRowInPMemKV(std::string& tabName, std::string& column,
+                                     std::string& value,
+                                     hsql::OperatorType& opType,
+                                     std::string& queryFeild,
+                                     std::string& queryValue) {
+  return 0;
+}
+
+bool Executor::SendUpdateAffectRowsToClient(Client* cli, uint16_t affectRows) {
+  return true;
+}
+
+
 }  // namespace uhp_sql

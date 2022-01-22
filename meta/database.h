@@ -24,6 +24,7 @@
 
 #include "datatable.h"
 #include "tablecolumn.h"
+#include "../third_party/libredis/hiredis.h"
 
 namespace uhp_sql {
 
@@ -39,7 +40,7 @@ class DataBase {
   DataTable* GetTable(std::string table_name);
 
  private:
-  pmemkv::db meta_db_;
+  static redisContext* pmemRedisContext;
 
   std::atomic<int> table_count_;
 
