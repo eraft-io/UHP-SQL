@@ -16,20 +16,64 @@
 
 #include "dbms.h"
 
+#include "../executor/executor.h"
+
 namespace uhp_sql {
 
-DBMS::DBMS() {}
+redisContext* DBMS::pmemRedisContext = uhp_sql::Executor::GetContext();
+
+DBMS::DBMS() {
+  cur_db_ = nullptr;
+  RecoverFromPmemKV();
+}
 
 DBMS::~DBMS() {}
 
-bool DBMS::OpenDataBase(std::string db_name) {}
+bool DBMS::CreateDataBase(std::string db_name) {
+  DataBase* newdb = new DataBase(db_name);
+  dbs_.insert(std::make_pair(db_name, newdb));
+  std::string key = "database_" + db_name;
+  auto reply = static_cast<redisReply*>(redisCommand(
+      pmemRedisContext, "SET %s %s", key.c_str(), db_name.c_str()));
+  freeReplyObject(reply);
+  return true;
+}
 
-bool DBMS::DropDataBase(std::string db_name) {}
+bool DBMS::OpenDataBase(std::string db_name) {
+  std::unordered_map<std::string, DataBase*>::iterator iter;
+  iter = dbs_.find(db_name);
+  if (iter != dbs_.end()) {
+    cur_db_ = iter->second;
+    return true;
+  } else {
+    return false;
+  }
+}
+
+bool DBMS::DropDataBase(std::string db_name) {
+  std::unordered_map<std::string, DataBase*>::iterator iter;
+  iter = dbs_.find(db_name);
+  if (iter != dbs_.end()) {
+  }
+}
 
 bool DBMS::RecoverFromPmemKV() {}
 
-std::vector<std::string> DBMS::ShowDataBases() {}
+std::vector<std::string> DBMS::ShowDataBases() {
+  for (std::unordered_map<std::string, DataBase*>::iterator iter = dbs_.begin();
+       iter != dbs_.end(); ++iter)
+    std::cout << iter->first << '\n';
+}
 
-DataBase* DBMS::SwitchDB(std::string db_name) {}
+bool DBMS::SwitchDB(std::string db_name) {
+  std::unordered_map<std::string, DataBase*>::iterator iter;
+  iter = dbs_.find(db_name);
+  if (iter != dbs_.end()) {
+    cur_db_ = iter->second;
+  } else {
+    std::cout << "Switch DB failed!\n";
+    return false;
+  }
+}
 
 }  // namespace uhp_sql

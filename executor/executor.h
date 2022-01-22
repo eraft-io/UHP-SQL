@@ -29,7 +29,6 @@
 namespace uhp_sql {
 
 class Executor {
-
  public:
   static bool Init(std::string pmemRedisIp, uint16_t pmemRedisPort);
 
@@ -101,8 +100,11 @@ class Executor {
 
   static bool DropTableInPMemKV(std::string tabName);
 
-  static void SendErrorMessageToClient(Client* cli, uint8_t seq,  uint16_t errorCode, std::string sqlState,
-                                     std::string errorMessage);
+  static void SendErrorMessageToClient(Client* cli, uint8_t seq,
+                                       uint16_t errorCode, std::string sqlState,
+                                       std::string errorMessage);
+
+  static redisContext* GetContext();
 
   Executor();
 

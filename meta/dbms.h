@@ -36,16 +36,19 @@ class DBMS {
  public:
   DBMS();
   ~DBMS();
+  bool CreateDataBase(std::string db_name);
   bool OpenDataBase(std::string db_name);
   bool DropDataBase(std::string db_name);
 
   bool RecoverFromPmemKV();
   std::vector<std::string> ShowDataBases();
 
-  DataBase* SwitchDB(std::string db_name);
+  bool SwitchDB(std::string db_name);
 
  private:
   std::unordered_map<std::string, DataBase*> dbs_;
+
+  static redisContext* pmemRedisContext;
 
   DataBase* cur_db_;
 

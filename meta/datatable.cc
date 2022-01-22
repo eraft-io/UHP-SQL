@@ -16,9 +16,17 @@
 
 #include "datatable.h"
 
+#include "../executor/executor.h"
+
 namespace uhp_sql {
 
-DataTable::DataTable() {}
+redisContext* DataTable::pmemRedisContext = uhp_sql::Executor::GetContext();
+
+DataTable::DataTable(std::string table_name, std::vector<TableColumn*> cols) {
+  for (auto col : cols) {
+    cols_.push_back();
+  }
+}
 
 DataTable::~DataTable() {}
 
