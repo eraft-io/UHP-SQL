@@ -17,7 +17,23 @@
 
 namespace uhp_sql {
 
-std::string Executor::ExecDeleteStatement(const hsql::DeleteStatement* stmt,
-                                          uintmax_t numIndent) {}
+bool Executor::AnalyzeDeleteStatement(const hsql::DeleteStatement* stmt,
+                                      std::string& tabName,
+                                      hsql::OperatorType& opType,
+                                      std::string& queryFeild,
+                                      std::string& queryValue) {
+  return true;
+}
+
+uint64_t Executor::DeleteRowsInPMemKV(std::string& tabName,
+                                      hsql::OperatorType& opType,
+                                      std::string& queryFeild,
+                                      std::string& queryValue) {
+  return 0;
+}
+
+bool Executor::SendDeleteAffectRowsToClient(Client* cli, uint64_t affectRows) {
+  return true;
+}
 
 }  // namespace uhp_sql

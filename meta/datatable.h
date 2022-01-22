@@ -23,6 +23,7 @@
 #include <vector>
 
 #include "tablecolumn.h"
+#include "../third_party/libredis/hiredis.h"
 
 namespace uhp_sql {
 
@@ -33,7 +34,7 @@ class DataTable {
   bool RecoverFromPmemKV();
 
  private:
-  pmemkv::db* db_;
+  static redisContext* pmemRedisContext;
 
   std::vector<TableColumn> cols;
   std::map<std::string, hsql::DataType> type_map;  // <colName, type>
