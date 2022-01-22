@@ -11,9 +11,11 @@ enum ImportType {
   kImportAuto
 };
 
+
+
 // Represents SQL Import statements.
 struct ImportStatement : SQLStatement {
-  ImportStatement(ImportType type);
+  ImportStatement(ImportType type); 
   ~ImportStatement() override;
 
   ImportType type;

@@ -175,4 +175,68 @@ Executor::Executor() {}
 
 Executor::~Executor() {}
 
+bool Executor::AnalyzeCreateTableStatement(const hsql::CreateStatement* stmt,
+                                           std::string& tabName,
+                                           std::vector<TableColumn>& colDefs) {}
+
+uint64_t Executor::CreateTableMetaToPMemKV(std::string& tabName,
+                                           std::vector<TableColumn>& colDefs) {}
+
+bool Executor::SendCreateTableResultToClient(Client* cli, uint8_t affectRows) {}
+
+bool Executor::AnalyzeSelectStatement(hsql::SelectStatement* stmt,
+                                      hsql::OperatorType& opType,
+                                      std::string& queryTab,
+                                      std::string& queryFeild,
+                                      std::string& queryValue, uint64_t& limit,
+                                      uint64_t& offset) {}
+
+std::vector<std::vector<TableColumn> > Executor::SelectRowsFromPMemKV(
+    hsql::OperatorType& opType, std::string& queryTab, std::string& queryFeild,
+    std::string& queryValue, uint64_t& limit, uint64_t& offset) {}
+
+bool Executor::SendResultToClient(
+    Client* cli, std::vector<std::vector<TableColumn> >& resultSet) {}
+
+bool Executor::AnalyzeInsertStatement(const hsql::InsertStatement* stmt,
+                                      std::string& tabName,
+                                      std::vector<TableColumn>& resultSet) {}
+
+uint64_t Executor::InsertRowToPMemKV(std::string& tabName,
+                                     std::vector<TableColumn>& row) {}
+
+bool Executor::SendInsertAffectRowsToClient(Client* cli, uint64_t affectRows) {}
+
+bool Executor::AnalyzeUpdateStatement(const hsql::UpdateStatement* stmt,
+                                      std::string& tabName, std::string& column,
+                                      std::string& value,
+                                      hsql::OperatorType& opType,
+                                      std::string& queryFeild,
+                                      std::string& queryValue) {}
+
+uint64_t Executor::UpdateRowInPMemKV(std::string& tabName, std::string& column,
+                                     std::string& value,
+                                     hsql::OperatorType& opType,
+                                     std::string& queryFeild,
+                                     std::string& queryValue) {}
+
+bool Executor::SendUpdateAffectRowsToClient(Client* cli, uint16_t affectRows) {}
+
+bool Executor::AnalyzeDeleteStatement(const hsql::DeleteStatement* stmt,
+                                      std::string& tabName,
+                                      hsql::OperatorType& opType,
+                                      std::string& queryFeild,
+                                      std::string& queryValue) {}
+
+uint64_t Executor::DeleteRowsInPMemKV(std::string& tabName,
+                                      hsql::OperatorType& opType,
+                                      std::string& queryFeild,
+                                      std::string& queryValue) {}
+
+bool Executor::SendDeleteAffectRowsToClient(Client* cli, uint64_t affectRows) {}
+
+bool Executor::OpenTableInPMemKV(std::string newTab) {}
+
+bool Executor::DropTableInPMemKV(std::string tabName) {}
+
 }  // namespace uhp_sql

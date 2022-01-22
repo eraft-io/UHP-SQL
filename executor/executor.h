@@ -21,6 +21,7 @@
 #include "../parser/sql_parser.h"
 #include "../third_party/libredis/hiredis.h"
 // contains printing utilities
+#include "../meta/tablecolumn.h"
 #include "../network/client.h"
 #include "../network/unbounded_buffer.h"
 #include "../parser/sqlhelper.h"
@@ -49,6 +50,71 @@ class Executor {
 
   static std::string ExecDeleteStatement(const hsql::DeleteStatement* stmt,
                                          uintmax_t numIndent);
+
+  static bool AnalyzeCreateTableStatement(const hsql::CreateStatement* stmt,
+                                          std::string& tabName,
+                                          std::vector<TableColumn>& colDefs);
+
+  static uint64_t CreateTableMetaToPMemKV(std::string& tabName,
+                                          std::vector<TableColumn>& colDefs);
+
+  static bool SendCreateTableResultToClient(Client* cli, uint8_t affectRows);
+
+  static bool AnalyzeSelectStatement(hsql::SelectStatement* stmt,
+                                     hsql::OperatorType& opType,
+                                     std::string& queryTab,
+                                     std::string& queryFeild,
+                                     std::string& queryValue, uint64_t& limit,
+                                     uint64_t& offset);
+
+  static std::vector<std::vector<TableColumn> > SelectRowsFromPMemKV(
+      hsql::OperatorType& opType, std::string& queryTab,
+      std::string& queryFeild, std::string& queryValue, uint64_t& limit,
+      uint64_t& offset);
+
+  static bool SendResultToClient(
+      Client* cli, std::vector<std::vector<TableColumn> >& resultSet);
+
+  static bool AnalyzeInsertStatement(const hsql::InsertStatement* stmt,
+                                     std::string& tabName,
+                                     std::vector<TableColumn>& resultSet);
+
+  static uint64_t InsertRowToPMemKV(std::string& tabName,
+                                    std::vector<TableColumn>& row);
+
+  static bool SendInsertAffectRowsToClient(Client* cli, uint64_t affectRows);
+
+  static bool AnalyzeUpdateStatement(const hsql::UpdateStatement* stmt,
+                                     std::string& tabName, std::string& column,
+                                     std::string& value,
+                                     hsql::OperatorType& opType,
+                                     std::string& queryFeild,
+                                     std::string& queryValue);
+
+  static uint64_t UpdateRowInPMemKV(std::string& tabName, std::string& column,
+                                    std::string& value,
+                                    hsql::OperatorType& opType,
+                                    std::string& queryFeild,
+                                    std::string& queryValue);
+
+  static bool SendUpdateAffectRowsToClient(Client* cli, uint16_t affectRows);
+
+  static bool AnalyzeDeleteStatement(const hsql::DeleteStatement* stmt,
+                                     std::string& tabName,
+                                     hsql::OperatorType& opType,
+                                     std::string& queryFeild,
+                                     std::string& queryValue);
+
+  static uint64_t DeleteRowsInPMemKV(std::string& tabName,
+                                     hsql::OperatorType& opType,
+                                     std::string& queryFeild,
+                                     std::string& queryValue);
+
+  static bool SendDeleteAffectRowsToClient(Client* cli, uint64_t affectRows);
+
+  static bool OpenTableInPMemKV(std::string newTab);
+
+  static bool DropTableInPMemKV(std::string tabName);
 
   Executor();
 
