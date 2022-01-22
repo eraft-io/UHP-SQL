@@ -4,6 +4,7 @@
 #include <ostream>
 
 namespace hsql {
+
 enum class DataType {
   UNKNOWN,
   INT,
@@ -20,6 +21,41 @@ enum class DataType {
   TIME,
   SMALLINT,
 };
+
+static int DataType2Int(DataType dt) {
+  switch (dt) {
+    case DataType::UNKNOWN:
+      return 0;
+    case DataType::INT:
+      return 1;
+    case DataType::LONG:
+      return 2;
+    case DataType::FLOAT:
+      return 3;
+    case DataType::DOUBLE:
+      return 4;
+    case DataType::DECIMAL:
+      return 5;
+    case DataType::REAL:
+      return 6;
+    case DataType::CHAR:
+      return 7;
+    case DataType::VARCHAR:
+      return 8;
+    case DataType::TEXT:
+      return 9;
+    case DataType::DATETIME:
+      return 10;
+    case DataType::DATE:
+      return 11;
+    case DataType::TIME:
+      return 12;
+    case DataType::SMALLINT:
+      return 13;
+    default:
+      return 15;
+  }
+}
 
 struct ColumnSpecification {
   ColumnSpecification() = default;

@@ -22,9 +22,11 @@ namespace uhp_sql {
 
 redisContext* DataTable::pmemRedisContext = uhp_sql::Executor::GetContext();
 
-DataTable::DataTable(std::string table_name, std::vector<TableColumn*> cols) {
-  for (auto col : cols) {
-    cols_.push_back();
+DataTable::DataTable(std::string table_name, std::vector<TableColumn>& cols) {
+  table_name_ = table_name;
+  for (int i = 0; i < cols.size(); ++i) {
+    cols.push_back(cols[i]);
+    type_map_[cols[i].GetColName()] = cols[i].GetColTyp();
   }
 }
 

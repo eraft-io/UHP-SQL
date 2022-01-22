@@ -32,6 +32,11 @@ class TableColumn {
               std::string val);  // Value val
   ~TableColumn();
 
+  std::string GetColName();
+  int GetColType();
+  hsql::DataType GetColTyp();
+  std::string GetVal();
+
  private:
   std::string col_name_;
 
