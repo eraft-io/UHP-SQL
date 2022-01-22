@@ -20,6 +20,29 @@ namespace uhp_sql {
 bool Executor::AnalyzeInsertStatement(const hsql::InsertStatement* stmt,
                                       std::string& tabName,
                                       std::vector<TableColumn>& resultSet) {
+  tabName = std::string(stmt->tableName);
+  std::vector<std::string> columnNames;
+  for (char* colName : *stmt->columns) {
+    columnNames.push_back(std::string(colName));
+  }
+  std::vector<std::string> colValues;
+  for (hsql::Expr* expr : *stmt->values) {
+    switch (expr->type) {
+      case hsql::kExprLiteralString: {
+        colValues.push_back(expr->name);
+        break;
+      }
+      case hsql::kExprLiteralInt: {
+        colValues.push_back(std::to_string(expr->ival));
+        break;
+      }
+    }
+  }
+  for(uint64_t i = 0; i < columnNames.size(); i++) {
+    // TODO: get coltype with table name and col name
+    TableColumn tabCol(columnNames[i], 0, colValues[i]);
+    resultSet.push_back(tabCol);
+  }
   return true;
 }
 
