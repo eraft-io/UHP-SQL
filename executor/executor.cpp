@@ -146,7 +146,6 @@ Executor::Executor() {}
 
 Executor::~Executor() {}
 
-
 bool Executor::OpenTableInPMemKV(std::string newTab) { return true; }
 
 bool Executor::DropTableInPMemKV(std::string tabName) { return true; }
@@ -170,5 +169,7 @@ void Executor::SendErrorMessageToClient(Client* cli, uint8_t seq,
   cli->SendPacket(reply_);
   reply_.Clear();
 }
+
+redisContext* Executor::GetContext() { return pmemRedisContext; }
 
 }  // namespace uhp_sql
