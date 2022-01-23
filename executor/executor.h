@@ -22,6 +22,7 @@
 #include "../third_party/libredis/hiredis.h"
 // contains printing utilities
 #include "../meta/tablecolumn.h"
+#include "../meta/dbms.h"
 #include "../network/client.h"
 #include "../network/unbounded_buffer.h"
 #include "../parser/sqlhelper.h"
@@ -104,6 +105,9 @@ class Executor {
                                        uint16_t errorCode, std::string sqlState,
                                        std::string errorMessage);
 
+  static void SendOkMessageToClient(Client* cli, uint8_t seq, uint64_t affectedRows, uint64_t lastInsertID,
+   uint16_t statusFlags, uint16_t warnings);
+
   static redisContext* GetContext();
 
   Executor();
@@ -112,6 +116,8 @@ class Executor {
 
  private:
   static redisContext* pmemRedisContext;
+
+  static DBMS* dbmsContext;
 };
 
 }  // namespace uhp_sql

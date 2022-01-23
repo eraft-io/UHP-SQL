@@ -14,6 +14,7 @@
 //
 
 #include "executor.h"
+#include "../meta/tablecolumn.h"
 
 namespace uhp_sql {
 
@@ -21,16 +22,26 @@ namespace uhp_sql {
 bool Executor::AnalyzeCreateTableStatement(const hsql::CreateStatement* stmt,
                                            std::string& tabName,
                                            std::vector<TableColumn>& colDefs) {
+  // parse create stmt
+  tabName = std::string(stmt->tableName);
+  
+  for(auto columnDef : stmt->columns) {
+     auto tableCol = TableColumn(std::string(columeDef->name), columeDef->type);
+     colDefs.push_back(tableCol);
+  }
+
   return true;
 }
 
 uint64_t Executor::CreateTableMetaToPMemKV(std::string& tabName,
                                            std::vector<TableColumn>& colDefs) {
-  return 0;
+  // if not success return 0
+  Executor::dbmsContext->cur_db_->CreateTable(tabName, colDefs);
+  return 1;
 }
 
-void Executor::SendCreateTableResultToClient(Client* cli, uint8_t affectRows) {
-  return;
+void Executor::SendCreateTableResultToClient(Client* cli, uint8_t seq, uint8_t affectRows) {
+  SendOkMessageToClient(cli, seq, affectRows, 0, 2, 1);
 }
 
 }  // namespace uhp_sql

@@ -24,6 +24,7 @@
 namespace uhp_sql {
 
 redisContext* Executor::pmemRedisContext = nullptr;
+DBMS* Executor::dbmsContext = nullptr;
 
 bool Executor::Init(std::string pmemRedisIp, uint16_t pmemRedisPort) {
   redisReply* reply;
@@ -57,7 +58,7 @@ bool Executor::Exec(hsql::SQLParserResult& result, Client* cli,
                 createTableName, colDefs)) {
           uint64_t affectRows =
               CreateTableMetaToPMemKV(createTableName, colDefs);
-          SendCreateTableResultToClient(cli, affectRows);
+          SendCreateTableResultToClient(cli, pack[3]+1, affectRows);
         } else {
           // TODO: send analyze sql error to cli
         }
@@ -129,17 +130,24 @@ bool Executor::Exec(hsql::SQLParserResult& result, Client* cli,
         break;
       }
       default: {
-        Protocol::OkPacket okPack;
-        std::vector<uint8_t> outPut = okPack.Pack(0, 0, 2, 1);
-        outPut[3] = pack[3] + 1;
-        reply_.PushData(std::string(outPut.begin(), outPut.end()).c_str(),
-                        outPut.size());
-        cli->SendPacket(reply_);
-        reply_.Clear();
+        SendOkMessageToClient(cli, pack[3] + 1, 0, 0, 2, 1)
       }
     }
   }
   return true;
+}
+
+void Executor::SendOkMessageToClient(Client* cli, uint8_t seq, uint64_t affectedRows,
+                                uint64_t lastInsertID, uint16_t statusFlags,
+                                uint16_t warnings) {
+  Protocol::OkPacket okPack;
+  std::vector<uint8_t> outPut =
+      okPack.Pack(affectedRows, lastInsertID, statusFlags, warnings);
+  outPut[3] = seq;
+  reply_.PushData(std::string(outPut.begin(), outPut.end()).c_str(),
+                  outPut.size());
+  cli->SendPacket(reply_);
+  reply_.Clear();
 }
 
 Executor::Executor() {}
