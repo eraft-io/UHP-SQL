@@ -17,7 +17,7 @@
 #include "dbms.h"
 
 #include "../executor/executor.h"
-#include "hiredis/hiredis.h"
+#include "../third_party/libredis/hiredis.h"
 
 namespace uhp_sql {
 
@@ -61,7 +61,10 @@ bool DBMS::DropDataBase(std::string db_name) {
   }
 }
 
-bool DBMS::RecoverFromPmemKV() {}
+bool DBMS::RecoverFromPmemKV() {
+  redisReply* reply =
+      (redisReply*)redisCommand(pmemRedisContext, "SCAN %s %s", , );
+}
 
 DataBase* DBMS::GetCurDB() { return cur_db_; }
 

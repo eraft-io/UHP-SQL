@@ -34,6 +34,10 @@ DataTable::~DataTable() {}
 
 bool DataTable::RecoverFromPmemKV() {}
 
+hsql::DataType DataTable::GetTypebyCol(std::string name) {
+  return type_map_[name];
+}
+
 std::string DataTable::GetTableName() { return table_name_; }
 
 }  // namespace uhp_sql

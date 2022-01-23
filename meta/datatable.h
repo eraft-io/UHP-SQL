@@ -33,6 +33,7 @@ class DataTable {
   ~DataTable();
   bool RecoverFromPmemKV();
   std::string GetTableName();
+  hsql::DataType GetTypebyCol(std::string name);
 
  private:
   static redisContext* pmemRedisContext;
