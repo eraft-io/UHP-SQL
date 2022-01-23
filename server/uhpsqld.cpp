@@ -57,7 +57,9 @@ bool Uhpsqld::_Init() {
 
 bool Uhpsqld::_RunLogic() { return Server::_RunLogic(); }
 
-bool Uhpsqld::_Recycle() {}
+bool Uhpsqld::_Recycle() {
+  return true;
+}
 
 int main(int argc, char *argv[]) {
   Uhpsqld svr;

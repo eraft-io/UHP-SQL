@@ -21,8 +21,8 @@
 #include "../parser/sql_parser.h"
 #include "../third_party/libredis/hiredis.h"
 // contains printing utilities
-#include "../meta/tablecolumn.h"
 #include "../meta/dbms.h"
+#include "../meta/tablecolumn.h"
 #include "../network/client.h"
 #include "../network/unbounded_buffer.h"
 #include "../parser/sqlhelper.h"
@@ -43,7 +43,8 @@ class Executor {
   static uint64_t CreateTableMetaToPMemKV(std::string& tabName,
                                           std::vector<TableColumn>& colDefs);
 
-  static void SendCreateTableResultToClient(Client* cli, uint8_t affectRows);
+  static void SendCreateTableResultToClient(Client* cli, uint8_t seq,
+                                            uint8_t affectRows);
 
   static bool AnalyzeSelectStatement(const hsql::SelectStatement* stmt,
                                      hsql::OperatorType& opType,
@@ -67,7 +68,8 @@ class Executor {
   static uint64_t InsertRowToPMemKV(std::string& tabName,
                                     std::vector<TableColumn>& row);
 
-  static bool SendInsertAffectRowsToClient(Client* cli, uint64_t affectRows);
+  static bool SendInsertAffectRowsToClient(Client* cli, uint8_t seq,
+                                           uint64_t affectRows);
 
   static bool AnalyzeUpdateStatement(const hsql::UpdateStatement* stmt,
                                      std::string& tabName, std::string& column,
@@ -82,7 +84,7 @@ class Executor {
                                     std::string& queryFeild,
                                     std::string& queryValue);
 
-  static bool SendUpdateAffectRowsToClient(Client* cli, uint16_t affectRows);
+  static bool SendUpdateAffectRowsToClient(Client* cli, uint8_t seq, uint16_t affectRows);
 
   static bool AnalyzeDeleteStatement(const hsql::DeleteStatement* stmt,
                                      std::string& tabName,
@@ -95,7 +97,8 @@ class Executor {
                                      std::string& queryFeild,
                                      std::string& queryValue);
 
-  static bool SendDeleteAffectRowsToClient(Client* cli, uint64_t affectRows);
+  static bool SendDeleteAffectRowsToClient(Client* cli, uint8_t seq,
+                                           uint64_t affectRows);
 
   static bool OpenTableInPMemKV(std::string newTab);
 
@@ -105,8 +108,10 @@ class Executor {
                                        uint16_t errorCode, std::string sqlState,
                                        std::string errorMessage);
 
-  static void SendOkMessageToClient(Client* cli, uint8_t seq, uint64_t affectedRows, uint64_t lastInsertID,
-   uint16_t statusFlags, uint16_t warnings);
+  static void SendOkMessageToClient(Client* cli, uint8_t seq,
+                                    uint64_t affectedRows,
+                                    uint64_t lastInsertID, uint16_t statusFlags,
+                                    uint16_t warnings);
 
   static redisContext* GetContext();
 
