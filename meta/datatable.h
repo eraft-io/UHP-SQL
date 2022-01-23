@@ -33,13 +33,15 @@ class DataTable {
   ~DataTable();
   bool RecoverFromPmemKV();
   std::string GetTableName();
-  hsql::DataType GetTypebyCol(std::string name);
+  int GetColIndex(std::string col_name);
+  hsql::DataType GetColType(std::string col_name);
 
  private:
   static redisContext* pmemRedisContext;
   std::string table_name_;
   std::vector<TableColumn> cols_;
-  std::map<std::string, hsql::DataType> type_map_;  // <colName, type>
+  std::map<std::string, hsql::DataType> col_type_;  // <colName, type>
+  std::map<std::string, int> col_index_;            // col index
 };
 
 }  // namespace uhp_sql

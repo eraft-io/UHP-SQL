@@ -58,7 +58,46 @@ bool DataBase::DropTable(std::string table_name) {
   return true;
 }
 
-bool DataBase::RecoverFromPmemKV() {}
+bool DataBase::RecoverFromPmemKV() {
+  std::string scankey = "table_" + db_name_ + "_*";
+  redisReply* reply =
+      (redisReply*)redisCommand(pmemRedisContext, "SCAN 0 MATCH %s", scankey);
+  for (int i = 0; i < reply->element[1]->elements;) {
+    std::string tablename = reply->element[1]->element[i++]->str;
+    std::string table = reply->element[1]->element[i++]->str;
+    std::vector<TableColumn> cols = GetColFromStr(table);
+    DataTable* newtable = new DataTable(tablename, cols);
+    tables_.insert(std::make_pair(tablename, newtable));
+    table_count_++;
+  }
+  freeReplyObject(reply);
+  return true;
+}
+
+std::vector<TableColumn> DataBase::GetColFromStr(std::string value) {
+  std::vector<TableColumn> ans;
+  std::string colname = "";
+  std::string str = "";
+  for (std::size_t i = 0; i < value.size(); ++i) {
+    if (value[i] == '^') {
+      colname = str;
+      str = "";
+      continue;
+    } else if (value[i] == '$') {
+      hsql::DataType coltype = hsql::Int2DataType(std::stoi(str));
+      TableColumn col(colname, coltype);
+      ans.push_back(col);
+      str = "";
+      ++i;
+      continue;
+    }
+    str += value[i];
+  }
+  hsql::DataType coltype = hsql::Int2DataType(std::stoi(str));
+  TableColumn col(colname, coltype);
+  ans.push_back(col);
+  return ans;
+}
 
 DataTable* DataBase::GetTable(std::string table_name) {
   std::unordered_map<std::string, DataTable*>::iterator iter;

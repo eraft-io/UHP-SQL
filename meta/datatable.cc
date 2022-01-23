@@ -26,7 +26,8 @@ DataTable::DataTable(std::string table_name, std::vector<TableColumn>& cols) {
   table_name_ = table_name;
   for (int i = 0; i < cols.size(); ++i) {
     cols.push_back(cols[i]);
-    type_map_[cols[i].GetColName()] = cols[i].GetColTyp();
+    col_type_[cols[i].GetColName()] = cols[i].GetColTyp();
+    col_index_[cols[i].GetColName()] = i;
   }
 }
 
@@ -34,8 +35,22 @@ DataTable::~DataTable() {}
 
 bool DataTable::RecoverFromPmemKV() {}
 
-hsql::DataType DataTable::GetTypebyCol(std::string name) {
-  return type_map_[name];
+int DataTable::GetColIndex(std::string col_name) {
+  std::map<std::string, int>::iterator it;
+  it = col_index_.find(col_name);
+  if (it != col_index_.end()) {
+    return it->second;
+  }
+  return -1;
+}
+
+hsql::DataType DataTable::GetColType(std::string col_name) {
+  std::map<std::string, hsql::DataType>::iterator it;
+  it = col_type_.find(col_name);
+  if (it != col_type_.end()) {
+    return it->second;
+  }
+  return hsql::DataType::VARCHAR;
 }
 
 std::string DataTable::GetTableName() { return table_name_; }

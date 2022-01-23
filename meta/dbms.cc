@@ -72,6 +72,8 @@ bool DBMS::RecoverFromPmemKV() {
     DataBase* newdb = new DataBase(dbname);
     dbs_.insert(std::make_pair(dbname, newdb));
   }
+  freeReplyObject(reply);
+  return true;
 }
 
 DataBase* DBMS::GetCurDB() { return cur_db_; }

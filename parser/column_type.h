@@ -22,6 +22,41 @@ enum class DataType {
   SMALLINT,
 };
 
+static DataType Int2DataType(int n) {
+  switch (n) {
+    case 0:
+      return DataType::UNKNOWN;
+    case 1:
+      return DataType::INT;
+    case 2:
+      return DataType::LONG;
+    case 3:
+      return DataType::FLOAT;
+    case 4:
+      return DataType::DOUBLE;
+    case 5:
+      return DataType::DECIMAL;
+    case 6:
+      return DataType::REAL;
+    case 7:
+      return DataType::CHAR;
+    case 8:
+      return DataType::VARCHAR;
+    case 9:
+      return DataType::TEXT;
+    case 10:
+      return DataType::DATETIME;
+    case 11:
+      return DataType::DATE;
+    case 12:
+      return DataType::TIME;
+    case 13:
+      return DataType::SMALLINT;
+    default:
+      return DataType::VARCHAR;
+  }
+}
+
 static int DataType2Int(DataType dt) {
   switch (dt) {
     case DataType::UNKNOWN:
