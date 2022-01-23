@@ -25,9 +25,9 @@ bool Executor::AnalyzeCreateTableStatement(const hsql::CreateStatement* stmt,
   // parse create stmt
   tabName = std::string(stmt->tableName);
   
-  for(auto columnDef : stmt->columns) {
-     auto tableCol = TableColumn(std::string(columeDef->name), columeDef->type);
-     colDefs.push_back(tableCol);
+  for(auto columnDef : *stmt->columns) {
+     auto tableCol = new TableColumn(columnDef->name, columnDef->type.data_type);
+     colDefs.push_back(*tableCol);
   }
 
   return true;
@@ -36,7 +36,7 @@ bool Executor::AnalyzeCreateTableStatement(const hsql::CreateStatement* stmt,
 uint64_t Executor::CreateTableMetaToPMemKV(std::string& tabName,
                                            std::vector<TableColumn>& colDefs) {
   // if not success return 0
-  Executor::dbmsContext->cur_db_->CreateTable(tabName, colDefs);
+  Executor::dbmsContext->GetCurDB()->CreateTable(tabName, colDefs);
   return 1;
 }
 
