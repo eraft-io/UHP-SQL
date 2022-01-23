@@ -30,9 +30,9 @@ namespace uhp_sql {
 
 class DataBase {
  public:
-  DataBase(std::string db_name);
+  DataBase(std::string db_name, bool needRecover);
   ~DataBase();
-  DataTable* CreateTable(std::string table_name,
+  bool CreateTable(std::string table_name,
                          std::vector<TableColumn>& cols);
 
   bool DropTable(std::string table_name);
@@ -42,7 +42,6 @@ class DataBase {
   DataTable* GetTable(std::string table_name);
 
  private:
-  static redisContext* pmemRedisContext;
 
   std::atomic<int> table_count_;
 

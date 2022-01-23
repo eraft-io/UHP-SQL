@@ -16,27 +16,28 @@
 
 #include "dbms.h"
 
+#include <iostream>
+
 #include "../executor/executor.h"
 #include "../third_party/libredis/hiredis.h"
 
 namespace uhp_sql {
 
-redisContext* DBMS::pmemRedisContext = uhp_sql::Executor::GetContext();
-
 DBMS::DBMS() {
   cur_db_ = nullptr;
-  RecoverFromPmemKV();
+  // RecoverFromPmemKV();
 }
 
 DBMS::~DBMS() {}
 
 bool DBMS::CreateDataBase(std::string db_name) {
-  DataBase* newdb = new DataBase(db_name);
+  DataBase* newdb = new DataBase(db_name, false);
   dbs_.insert(std::make_pair(db_name, newdb));
   std::string key = "database_" + db_name;
   auto reply = static_cast<redisReply*>(redisCommand(
-      pmemRedisContext, "SET %s %s", key.c_str(), db_name.c_str()));
+      Executor::GetContext(), "SET %s %s", key.c_str(), db_name.c_str()));
   freeReplyObject(reply);
+  std::cout << "create database " << db_name << " ok! " << std::endl;
   return true;
 }
 
@@ -57,22 +58,24 @@ bool DBMS::DropDataBase(std::string db_name) {
   std::string value = "";
   if (iter != dbs_.end()) {
     auto reply = static_cast<redisReply*>(redisCommand(
-        pmemRedisContext, "SET %s %s", db_name.c_str(), value.c_str()));
+        Executor::GetContext(), "SET %s %s", db_name.c_str(), value.c_str()));
     freeReplyObject(reply);
   }
   return true;
 }
 
 bool DBMS::RecoverFromPmemKV() {
-  redisReply* reply =
-      (redisReply*)redisCommand(pmemRedisContext, "SCAN 0 MATCH database_*");
+  redisReply* reply = (redisReply*)redisCommand(Executor::GetContext(),
+                                                "SCAN 0 MATCH database_*");
   for (int i = 0; i < reply->element[1]->elements;) {
     std::string key = reply->element[1]->element[i++]->str;
     std::string dbname = reply->element[1]->element[i++]->str;
-    DataBase* newdb = new DataBase(dbname);
+    DataBase* newdb = new DataBase(dbname, true);
     dbs_.insert(std::make_pair(dbname, newdb));
   }
-  freeReplyObject(reply);
+  if (reply) {
+    freeReplyObject(reply);
+  }
   return true;
 }
 
@@ -93,6 +96,7 @@ bool DBMS::SwitchDB(std::string db_name) {
   iter = dbs_.find(db_name);
   if (iter != dbs_.end()) {
     cur_db_ = iter->second;
+    std::cout << "switch to database " << db_name << " ok! " << std::endl;
   } else {
     std::cout << "Switch DB failed!\n";
     return false;

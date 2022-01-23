@@ -55,18 +55,20 @@ uint64_t Executor::InsertRowToPMemKV(std::string& tabName,
   std::string dbName =  Executor::dbmsContext->GetCurDB()->GetDbName();
   std::string key = "data_" + dbName + "_" + tabName + "_p_" + row[0].GetVal();
   std::vector<std::string> vals;
+  vals.resize(row.size());
   for(auto& col: row) {
-    vals.push_back(col.GetVal());
+    uint64_t index = Executor::dbmsContext->GetCurDB()->GetTable(tabName)->GetColIndex(col.GetColName());
+    vals[index] = col.GetVal();
   }
   std::string value = StringsJoin(vals, "$$");
   auto reply = static_cast<redisReply*>(
       redisCommand(Executor::pmemRedisContext, "SET %s %s", key.c_str(), value.c_str()));
   freeReplyObject(reply);
-  return 0;
+  return 1;
 }
 
 bool Executor::SendInsertAffectRowsToClient(Client* cli, uint8_t seq, uint64_t affectRows) {
-  SendOkMessageToClient(cli, seq, affectRows, 0, 2, 1);
+  SendOkMessageToClient(cli, seq, affectRows, 0, 2, 0);
   return true;
 }
 

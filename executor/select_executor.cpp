@@ -28,7 +28,7 @@ bool Executor::AnalyzeSelectStatement(const hsql::SelectStatement* stmt,
   hsql::Expr* expr = stmt->whereClause;
   if (!expr) return false;
   switch (expr->type) {
-    case kExprColumnRef:
+    case hsql::kExprColumnRef:
 
       break;
   }

@@ -48,8 +48,6 @@ class DBMS {
  private:
   std::unordered_map<std::string, DataBase*> dbs_;
 
-  static redisContext* pmemRedisContext;
-
   DataBase* cur_db_;
 
   std::map<int, PeerAddr> clients_;

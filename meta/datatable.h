@@ -37,7 +37,6 @@ class DataTable {
   hsql::DataType GetColType(std::string col_name);
 
  private:
-  static redisContext* pmemRedisContext;
   std::string table_name_;
   std::vector<TableColumn> cols_;
   std::map<std::string, hsql::DataType> col_type_;  // <colName, type>

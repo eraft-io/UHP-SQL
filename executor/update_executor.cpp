@@ -24,6 +24,26 @@ bool Executor::AnalyzeUpdateStatement(const hsql::UpdateStatement* stmt,
                                       hsql::OperatorType& opType,
                                       std::string& queryFeild,
                                       std::string& queryValue) {
+  tabName = std::string(stmt->table->name);
+  if(stmt->updates->size() == 0) {
+    return false;
+  }
+  column = std::string(stmt->updates[0][0]->column);
+  value = std::string(stmt->updates[0][0]->value->name);
+  if(stmt->where) {
+    return false;
+  }
+  switch(stmt->where->type) {
+    case hsql::kExprStar: {
+      break;
+    }
+    case hsql::kExprOperator: {
+      opType = stmt->where->opType;
+      queryFeild = stmt->where->expr->name;
+      queryValue = stmt->where->expr2->name;
+      break;
+    }
+  }
   return true;
 }
 
@@ -32,10 +52,12 @@ uint64_t Executor::UpdateRowInPMemKV(std::string& tabName, std::string& column,
                                      hsql::OperatorType& opType,
                                      std::string& queryFeild,
                                      std::string& queryValue) {
-  return 0;
+              
+  return 1;
 }
 
 bool Executor::SendUpdateAffectRowsToClient(Client* cli, uint8_t seq, uint16_t affectRows) {
+  SendOkMessageToClient(cli, seq, affectRows, 0, 2, 1);
   return true;
 }
 
