@@ -18,13 +18,20 @@
 
 namespace uhp_sql {
 
-
 bool Executor::AnalyzeSelectStatement(const hsql::SelectStatement* stmt,
                                       hsql::OperatorType& opType,
                                       std::string& queryTab,
                                       std::string& queryFeild,
                                       std::string& queryValue, uint64_t& limit,
                                       uint64_t& offset) {
+  std::string tablename = stmt->fromTable->name;
+  hsql::Expr* expr = stmt->whereClause;
+  if (!expr) return false;
+  switch (expr->type) {
+    case kExprColumnRef:
+
+      break;
+  }
   return true;
 }
 
