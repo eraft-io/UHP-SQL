@@ -24,6 +24,7 @@ redisContext* DataBase::pmemRedisContext = uhp_sql::Executor::GetContext();
 
 DataBase::DataBase(std::string db_name) : db_name_(db_name) {
   table_count_ = 0;
+  RecoverFromPmemKV();
 }
 
 DataBase::~DataBase() {}

@@ -54,16 +54,24 @@ bool DBMS::OpenDataBase(std::string db_name) {
 bool DBMS::DropDataBase(std::string db_name) {
   std::unordered_map<std::string, DataBase*>::iterator iter;
   iter = dbs_.find(db_name);
+  std::string value = "";
   if (iter != dbs_.end()) {
     auto reply = static_cast<redisReply*>(redisCommand(
-        pmemRedisContext, "SET %s %s", key.c_str(), db_name.c_str()));
+        pmemRedisContext, "SET %s %s", db_name.c_str(), value.c_str()));
     freeReplyObject(reply);
   }
+  return true;
 }
 
 bool DBMS::RecoverFromPmemKV() {
   redisReply* reply =
-      (redisReply*)redisCommand(pmemRedisContext, "SCAN %s %s", , );
+      (redisReply*)redisCommand(pmemRedisContext, "SCAN 0 MATCH database_*");
+  for (int i = 0; i < reply->element[1]->elements;) {
+    std::string key = reply->element[1]->element[i++]->str;
+    std::string dbname = reply->element[1]->element[i++]->str;
+    DataBase* newdb = new DataBase(dbname);
+    dbs_.insert(std::make_pair(dbname, newdb));
+  }
 }
 
 DataBase* DBMS::GetCurDB() { return cur_db_; }
