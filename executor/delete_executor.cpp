@@ -22,6 +22,26 @@ bool Executor::AnalyzeDeleteStatement(const hsql::DeleteStatement* stmt,
                                       hsql::OperatorType& opType,
                                       std::string& queryFeild,
                                       std::string& queryValue) {
+  tabName = std::string(stmt->tableName);
+  hsql::Expr* expr = stmt->expr;
+  if(!expr) {
+    // delete all data
+    queryFeild = "1";
+    queryValue = "1";
+    opType = hsql::OperatorType::kOpEquals;
+    return true;
+  }
+  switch(expr->type) {
+    case hsql::kExprStar: {
+      break;
+    }
+    case hsql::kExprOperator: {
+      opType = expr->opType;
+      queryFeild = expr->expr->name;
+      queryValue = expr->expr2->name;
+      break;
+    }
+  }
   return true;
 }
 
@@ -32,7 +52,8 @@ uint64_t Executor::DeleteRowsInPMemKV(std::string& tabName,
   return 0;
 }
 
-bool Executor::SendDeleteAffectRowsToClient(Client* cli, uint64_t affectRows) {
+bool Executor::SendDeleteAffectRowsToClient(Client* cli,uint8_t seq,  uint64_t affectRows) {
+  SendOkMessageToClient(cli, seq, affectRows, 0, 2, 1);
   return true;
 }
 

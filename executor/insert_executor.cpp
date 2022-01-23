@@ -14,6 +14,7 @@
 //
 
 #include "executor.h"
+#include "../network/string_utils.h"
 
 namespace uhp_sql {
 
@@ -38,9 +39,9 @@ bool Executor::AnalyzeInsertStatement(const hsql::InsertStatement* stmt,
       }
     }
   }
-  for(uint64_t i = 0; i < columnNames.size(); i++) {
+  for (uint64_t i = 0; i < columnNames.size(); i++) {
     // TODO: get coltype with table name and col name
-    TableColumn tabCol(columnNames[i], 0, colValues[i]);
+    TableColumn tabCol(columnNames[i], hsql::DataType::UNKNOWN, colValues[i]);
     resultSet.push_back(tabCol);
   }
   return true;
@@ -48,10 +49,24 @@ bool Executor::AnalyzeInsertStatement(const hsql::InsertStatement* stmt,
 
 uint64_t Executor::InsertRowToPMemKV(std::string& tabName,
                                      std::vector<TableColumn>& row) {
+  if(row.size() == 0) {
+    return 0;
+  }
+  std::string dbName =  DBMS().GetCurDB()->GetDbName();
+  std::string key = dbName + "_" + tabName + "_p_" + row[0].GetVal();
+  std::vector<std::string> vals;
+  for(auto& col: row) {
+    vals.push_back(col.GetVal());
+  }
+  std::string value = StringsJoin(vals, "$$");
+  auto reply = static_cast<redisReply*>(
+      redisCommand(Executor::pmemRedisContext, "SET %s %s", key.c_str(), value.c_str()));
+  freeReplyObject(reply);
   return 0;
 }
 
-bool Executor::SendInsertAffectRowsToClient(Client* cli, uint64_t affectRows) {
+bool Executor::SendInsertAffectRowsToClient(Client* cli, uint8_t seq, uint64_t affectRows) {
+  SendOkMessageToClient(cli, seq, affectRows, 0, 2, 1);
   return true;
 }
 

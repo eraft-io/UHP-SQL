@@ -43,7 +43,7 @@ class Executor {
   static uint64_t CreateTableMetaToPMemKV(std::string& tabName,
                                           std::vector<TableColumn>& colDefs);
 
-  static void SendCreateTableResultToClient(Client* cli, uint8_t affectRows);
+  static void SendCreateTableResultToClient(Client* cli, uint8_t seq, uint8_t affectRows);
 
   static bool AnalyzeSelectStatement(const hsql::SelectStatement* stmt,
                                      hsql::OperatorType& opType,
@@ -67,7 +67,7 @@ class Executor {
   static uint64_t InsertRowToPMemKV(std::string& tabName,
                                     std::vector<TableColumn>& row);
 
-  static bool SendInsertAffectRowsToClient(Client* cli, uint64_t affectRows);
+  static bool SendInsertAffectRowsToClient(Client* cli, uint8_t seq, uint64_t affectRows);
 
   static bool AnalyzeUpdateStatement(const hsql::UpdateStatement* stmt,
                                      std::string& tabName, std::string& column,

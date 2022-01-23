@@ -130,7 +130,7 @@ bool Executor::Exec(hsql::SQLParserResult& result, Client* cli,
         break;
       }
       default: {
-        SendOkMessageToClient(cli, pack[3] + 1, 0, 0, 2, 1)
+        SendOkMessageToClient(cli, pack[3] + 1, 0, 0, 2, 1);
       }
     }
   }
@@ -140,6 +140,7 @@ bool Executor::Exec(hsql::SQLParserResult& result, Client* cli,
 void Executor::SendOkMessageToClient(Client* cli, uint8_t seq, uint64_t affectedRows,
                                 uint64_t lastInsertID, uint16_t statusFlags,
                                 uint16_t warnings) {
+  UnboundedBuffer reply_;          
   Protocol::OkPacket okPack;
   std::vector<uint8_t> outPut =
       okPack.Pack(affectedRows, lastInsertID, statusFlags, warnings);
