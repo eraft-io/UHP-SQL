@@ -17,6 +17,7 @@
 #include "dbms.h"
 
 #include "../executor/executor.h"
+#include "hiredis/hiredis.h"
 
 namespace uhp_sql {
 
@@ -54,15 +55,24 @@ bool DBMS::DropDataBase(std::string db_name) {
   std::unordered_map<std::string, DataBase*>::iterator iter;
   iter = dbs_.find(db_name);
   if (iter != dbs_.end()) {
+    auto reply = static_cast<redisReply*>(redisCommand(
+        pmemRedisContext, "SET %s %s", key.c_str(), db_name.c_str()));
+    freeReplyObject(reply);
   }
 }
 
 bool DBMS::RecoverFromPmemKV() {}
 
+DataBase* DBMS::GetCurDB() { return cur_db_; }
+
 std::vector<std::string> DBMS::ShowDataBases() {
+  std::vector<std::string> ans;
   for (std::unordered_map<std::string, DataBase*>::iterator iter = dbs_.begin();
-       iter != dbs_.end(); ++iter)
+       iter != dbs_.end(); ++iter) {
     std::cout << iter->first << '\n';
+    ans.push_back(iter->first);
+  }
+  return ans;
 }
 
 bool DBMS::SwitchDB(std::string db_name) {

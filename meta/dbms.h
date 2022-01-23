@@ -42,7 +42,7 @@ class DBMS {
 
   bool RecoverFromPmemKV();
   std::vector<std::string> ShowDataBases();
-
+  DataBase* GetCurDB();
   bool SwitchDB(std::string db_name);
 
  private:

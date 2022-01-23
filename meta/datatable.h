@@ -32,6 +32,7 @@ class DataTable {
   DataTable(std::string table_name, std::vector<TableColumn>& cols);
   ~DataTable();
   bool RecoverFromPmemKV();
+  std::string GetTableName();
 
  private:
   static redisContext* pmemRedisContext;

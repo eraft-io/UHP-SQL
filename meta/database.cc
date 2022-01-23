@@ -44,6 +44,7 @@ DataTable* DataBase::CreateTable(std::string table_name,
   auto reply = static_cast<redisReply*>(
       redisCommand(pmemRedisContext, "SET %s %s", key.c_str(), value.c_str()));
   freeReplyObject(reply);
+  return newtable;
 }
 
 bool DataBase::DropTable(std::string table_name) {
@@ -68,5 +69,7 @@ DataTable* DataBase::GetTable(std::string table_name) {
     return nullptr;
   }
 }
+
+std::string DataBase::GetDbName() { return db_name_; }
 
 }  // namespace uhp_sql

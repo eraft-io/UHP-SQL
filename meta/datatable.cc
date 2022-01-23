@@ -34,4 +34,6 @@ DataTable::~DataTable() {}
 
 bool DataTable::RecoverFromPmemKV() {}
 
+std::string DataTable::GetTableName() { return table_name_; }
+
 }  // namespace uhp_sql
