@@ -37,7 +37,7 @@ class DataBase {
 
   bool DropTable(std::string table_name);
   bool RecoverFromPmemKV();
-
+  std::vector<TableColumn> GetColFromStr(std::string value);
   std::string GetDbName();
   DataTable* GetTable(std::string table_name);
 
