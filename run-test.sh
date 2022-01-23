@@ -6,4 +6,5 @@ set -e
 nohup redis-server &
 
 # run server
-/UHP-SQL/build/server/uhpsqld
+# /UHP-SQL/build/server/uhpsqld
+/bin/bash

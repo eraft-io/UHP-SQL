@@ -17,42 +17,47 @@
 #include "database.h"
 
 #include "../executor/executor.h"
+#include <iostream>
 
 namespace uhp_sql {
 
-redisContext* DataBase::pmemRedisContext = uhp_sql::Executor::GetContext();
-
-DataBase::DataBase(std::string db_name) : db_name_(db_name) {
+DataBase::DataBase(std::string db_name, bool needRecover) : db_name_(db_name) {
   table_count_ = 0;
-  RecoverFromPmemKV();
+  if(needRecover){
+    RecoverFromPmemKV();
+  }
 }
 
 DataBase::~DataBase() {}
 
-DataTable* DataBase::CreateTable(std::string table_name,
+bool DataBase::CreateTable(std::string table_name,
                                  std::vector<TableColumn>& cols) {
   DataTable* newtable = new DataTable(table_name, cols);
   tables_.insert(std::make_pair(table_name, newtable));
   table_count_++;
+
   std::string key = "table_" + db_name_ + "_" + table_name;
   std::string value;
-  for (int i = 0; i < cols.size(); ++i) {
+
+  for (int i = 0; i < cols.size(); i++) {
     value += cols[i].GetColName() + "^" + std::to_string(cols[i].GetColType());
     if (i != cols.size() - 1) {
       value += "$$";
     }
   }
+
   auto reply = static_cast<redisReply*>(
-      redisCommand(pmemRedisContext, "SET %s %s", key.c_str(), value.c_str()));
+      redisCommand(Executor::GetContext(), "SET %s %s", key.c_str(), value.c_str()));
   freeReplyObject(reply);
-  return newtable;
+  std::cout << "create table " << table_name << " ok! " << std::endl;
+  return true;
 }
 
 bool DataBase::DropTable(std::string table_name) {
   std::string key = "table_" + db_name_ + "_" + table_name;
   std::string value = "";
   auto reply = static_cast<redisReply*>(
-      redisCommand(pmemRedisContext, "SET %s %s", key.c_str(), value.c_str()));
+      redisCommand(Executor::GetContext(), "SET %s %s", key.c_str(), value.c_str()));
   freeReplyObject(reply);
   table_count_--;
   return true;
@@ -61,7 +66,7 @@ bool DataBase::DropTable(std::string table_name) {
 bool DataBase::RecoverFromPmemKV() {
   std::string scankey = "table_" + db_name_ + "_*";
   redisReply* reply =
-      (redisReply*)redisCommand(pmemRedisContext, "SCAN 0 MATCH %s", scankey);
+      (redisReply*)redisCommand(Executor::GetContext(), "SCAN 0 MATCH %s", scankey);
   for (int i = 0; i < reply->element[1]->elements;) {
     std::string tablename = reply->element[1]->element[i++]->str;
     std::string table = reply->element[1]->element[i++]->str;
@@ -70,7 +75,9 @@ bool DataBase::RecoverFromPmemKV() {
     tables_.insert(std::make_pair(tablename, newtable));
     table_count_++;
   }
-  freeReplyObject(reply);
+  if(reply) {
+    freeReplyObject(reply);
+  }
   return true;
 }
 

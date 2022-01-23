@@ -20,12 +20,10 @@
 
 namespace uhp_sql {
 
-redisContext* DataTable::pmemRedisContext = uhp_sql::Executor::GetContext();
-
 DataTable::DataTable(std::string table_name, std::vector<TableColumn>& cols) {
   table_name_ = table_name;
-  for (int i = 0; i < cols.size(); ++i) {
-    cols.push_back(cols[i]);
+  for (int i = 0; i < cols.size(); i++) {
+    cols_.push_back(cols[i]);
     col_type_[cols[i].GetColName()] = cols[i].GetColTyp();
     col_index_[cols[i].GetColName()] = i;
   }
@@ -33,7 +31,9 @@ DataTable::DataTable(std::string table_name, std::vector<TableColumn>& cols) {
 
 DataTable::~DataTable() {}
 
-bool DataTable::RecoverFromPmemKV() {}
+bool DataTable::RecoverFromPmemKV() {
+  return true;
+}
 
 int DataTable::GetColIndex(std::string col_name) {
   std::map<std::string, int>::iterator it;

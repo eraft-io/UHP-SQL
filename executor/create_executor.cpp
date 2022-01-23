@@ -15,6 +15,8 @@
 
 #include "executor.h"
 #include "../meta/tablecolumn.h"
+#include <iostream>
+#include "../parser/column_type.h"
 
 namespace uhp_sql {
 
@@ -24,10 +26,15 @@ bool Executor::AnalyzeCreateTableStatement(const hsql::CreateStatement* stmt,
                                            std::vector<TableColumn>& colDefs) {
   // parse create stmt
   tabName = std::string(stmt->tableName);
-  
-  for(auto columnDef : *stmt->columns) {
-     auto tableCol = new TableColumn(columnDef->name, columnDef->type.data_type);
-     colDefs.push_back(*tableCol);
+  std::cout << "analyze create table " << std::endl; 
+  std::cout << "col size " << stmt->columns->size() << std::endl;
+  // std::cout << "col 2 " << std::string(*stmt->columns[1]->name) << std::endl;
+
+  for(size_t i = 0; i < stmt->columns->size(); i ++) {
+      std::cout << "col " << std::string((*stmt->columns)[i]->name) << std::endl;
+      std::cout << "col type " << std::to_string(DataType2Int((*stmt->columns)[i]->type.data_type)) << std::endl;
+      TableColumn colDef(std::string((*stmt->columns)[i]->name), (*stmt->columns)[i]->type.data_type);
+      colDefs.push_back(std::move(colDef));
   }
 
   return true;
@@ -41,7 +48,7 @@ uint64_t Executor::CreateTableMetaToPMemKV(std::string& tabName,
 }
 
 void Executor::SendCreateTableResultToClient(Client* cli, uint8_t seq, uint8_t affectRows) {
-  SendOkMessageToClient(cli, seq, affectRows, 0, 2, 1);
+  SendOkMessageToClient(cli, seq, affectRows, 0, 2, 0);
 }
 
 }  // namespace uhp_sql

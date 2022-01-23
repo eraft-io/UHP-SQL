@@ -15,6 +15,8 @@
 
 #include "executor.h"
 
+#include <iostream>
+
 #include "../network/common.h"
 #include "../network/eof.h"
 #include "../network/err.h"
@@ -42,6 +44,12 @@ bool Executor::Init(std::string pmemRedisIp, uint16_t pmemRedisPort) {
     }
     return false;
   }
+
+  std::cout << "connect to pmem redis ok! " << std::endl;
+  dbmsContext = new DBMS();
+  // create default db and switch to it
+  dbmsContext->CreateDataBase(DEFAULT_DATABASE_NAME);
+  dbmsContext->SwitchDB(DEFAULT_DATABASE_NAME);
   return true;
 }
 
@@ -50,7 +58,7 @@ bool Executor::Exec(hsql::SQLParserResult& result, Client* cli,
   UnboundedBuffer reply_;
   for (size_t i = 0u; i < result.size(); ++i) {
     switch (result.getStatement(i)->type()) {
-      case hsql::kCreateTable: {
+      case hsql::kStmtCreate: {
         std::string createTableName;
         std::vector<TableColumn> colDefs;
         if (AnalyzeCreateTableStatement(
@@ -58,9 +66,10 @@ bool Executor::Exec(hsql::SQLParserResult& result, Client* cli,
                 createTableName, colDefs)) {
           uint64_t affectRows =
               CreateTableMetaToPMemKV(createTableName, colDefs);
-          SendCreateTableResultToClient(cli, pack[3]+1, affectRows);
+          SendCreateTableResultToClient(cli, pack[3] + 1, affectRows);
         } else {
           // TODO: send analyze sql error to cli
+          uhp_sql::Executor::SendErrorMessageToClient(cli, pack[3] + 1, 50,  "ABCDE", "analyze create table sql error");
         }
         break;
       }
@@ -89,7 +98,7 @@ bool Executor::Exec(hsql::SQLParserResult& result, Client* cli,
                 (const hsql::InsertStatement*)result.getStatement(i), tabName,
                 row)) {
           auto affectRows = InsertRowToPMemKV(tabName, row);
-          SendInsertAffectRowsToClient(cli, pack[3]+1, affectRows);
+          SendInsertAffectRowsToClient(cli, pack[3] + 1, affectRows);
         } else {
           // TODO: send analyze sql error to cli
         }
@@ -105,7 +114,7 @@ bool Executor::Exec(hsql::SQLParserResult& result, Client* cli,
                 opType, queryFeild, queryValue)) {
           auto affectRows =
               DeleteRowsInPMemKV(tabName, opType, queryFeild, queryValue);
-          SendDeleteAffectRowsToClient(cli, pack[3]+1, affectRows);
+          SendDeleteAffectRowsToClient(cli, pack[3] + 1, affectRows);
         } else {
           // TODO: send analyze sql error to cli
         }
@@ -123,7 +132,7 @@ bool Executor::Exec(hsql::SQLParserResult& result, Client* cli,
                 column, value, opType, queryFeild, queryValue)) {
           auto affectRows = UpdateRowInPMemKV(tabName, column, value, opType,
                                               queryFeild, queryValue);
-          SendUpdateAffectRowsToClient(cli, pack[3]+1, affectRows);
+          SendUpdateAffectRowsToClient(cli, pack[3] + 1, affectRows);
         } else {
           // TODO: send analyze sql error to cli
         }
@@ -137,14 +146,22 @@ bool Executor::Exec(hsql::SQLParserResult& result, Client* cli,
   return true;
 }
 
-void Executor::SendOkMessageToClient(Client* cli, uint8_t seq, uint64_t affectedRows,
-                                uint64_t lastInsertID, uint16_t statusFlags,
-                                uint16_t warnings) {
-  UnboundedBuffer reply_;          
+void Executor::SendOkMessageToClient(Client* cli, uint8_t seq,
+                                     uint64_t affectedRows,
+                                     uint64_t lastInsertID,
+                                     uint16_t statusFlags, uint16_t warnings) {
+  UnboundedBuffer reply_;
   Protocol::OkPacket okPack;
+  //         std::vector<uint8_t> OkPacket = {7, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0};
   std::vector<uint8_t> outPut =
       okPack.Pack(affectedRows, lastInsertID, statusFlags, warnings);
-  outPut[3] = seq;
+  std::vector<uint8_t> headPack;
+  headPack.push_back(outPut.size());
+  headPack.push_back(0);
+  headPack.push_back(0);
+  headPack.push_back(seq);
+  reply_.PushData(std::string(headPack.begin(), headPack.end()).c_str(),
+                  headPack.size());
   reply_.PushData(std::string(outPut.begin(), outPut.end()).c_str(),
                   outPut.size());
   cli->SendPacket(reply_);
