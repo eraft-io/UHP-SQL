@@ -29,13 +29,13 @@ namespace uhp_sql {
 
 class DataTable {
  public:
-  DataTable(std::string table_name, std::vector<TableColumn*> cols);
+  DataTable(std::string table_name, std::vector<TableColumn>& cols);
   ~DataTable();
   bool RecoverFromPmemKV();
 
  private:
   static redisContext* pmemRedisContext;
-
+  std::string table_name_;
   std::vector<TableColumn> cols_;
   std::map<std::string, hsql::DataType> type_map_;  // <colName, type>
 };
