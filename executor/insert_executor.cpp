@@ -53,7 +53,7 @@ uint64_t Executor::InsertRowToPMemKV(std::string& tabName,
     return 0;
   }
   std::string dbName =  Executor::dbmsContext->GetCurDB()->GetDbName();
-  std::string key = "data_" dbName + "_" + tabName + "_p_" + row[0].GetVal();
+  std::string key = "data_" + dbName + "_" + tabName + "_p_" + row[0].GetVal();
   std::vector<std::string> vals;
   for(auto& col: row) {
     vals.push_back(col.GetVal());

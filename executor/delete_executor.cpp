@@ -24,14 +24,14 @@ bool Executor::AnalyzeDeleteStatement(const hsql::DeleteStatement* stmt,
                                       std::string& queryValue) {
   tabName = std::string(stmt->tableName);
   hsql::Expr* expr = stmt->expr;
-  if(!expr) {
+  if (!expr) {
     // delete all data
     queryFeild = "1";
     queryValue = "1";
     opType = hsql::OperatorType::kOpEquals;
     return true;
   }
-  switch(expr->type) {
+  switch (expr->type) {
     case hsql::kExprStar: {
       break;
     }
@@ -51,17 +51,29 @@ uint64_t Executor::DeleteRowsInPMemKV(std::string& tabName,
                                       std::string& queryValue) {
   uint64_t deletedRows = 0;
   std::string dbName = Executor::dbmsContext->GetCurDB()->GetDbName();
-  switch(opType){
-    case hsql::OperatorType::kOpEquals:
-    {
+  switch (opType) {
+    case hsql::OperatorType::kOpEquals: {
       // del all data
-      if(queryFeild == "1" && queryValue == "1") {
-        std::string tabDataPrefix = "data_" dbName + "_" + tabName + "_p_";
-        
+      std::string tabDataPrefix = "data_" + dbName + "_" + tabName + "_p_";
+      if (queryFeild == "1" && queryValue == "1") {
+        auto reply = (redisReply*)redisCommand(
+            Executor::pmemRedisContext, "SCAN %d MATCH %s", 0, tabDataPrefix);
+        for (uint64_t i = 0; i < reply->element[1]->elements * 2;) {
+          std::string key = reply->element[1]->element[i]->str;
+          auto delReply = (redisReply*)redisCommand(Executor::pmemRedisContext,
+                                                    "DEL %s", key);
+          freeReplyObject(delReply);
+          i += 2;
+        }
+        freeReplyObject(reply);
       }
+      // check query if query feild is primary key, if not return not support
 
       // support primary key equal del
-
+      std::string delKey = tabDataPrefix + queryValue;
+      auto delReply = (redisReply*)redisCommand(Executor::pmemRedisContext,
+                                                "DEL %s", delKey);
+      freeReplyObject(delReply);
       break;
     }
   }
@@ -69,7 +81,8 @@ uint64_t Executor::DeleteRowsInPMemKV(std::string& tabName,
   return 0;
 }
 
-bool Executor::SendDeleteAffectRowsToClient(Client* cli, uint8_t seq,  uint64_t affectRows) {
+bool Executor::SendDeleteAffectRowsToClient(Client* cli, uint8_t seq,
+                                            uint64_t affectRows) {
   SendOkMessageToClient(cli, seq, affectRows, 0, 2, 1);
   return true;
 }
