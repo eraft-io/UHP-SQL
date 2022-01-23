@@ -35,9 +35,8 @@ uint64_t Executor::UpdateRowInPMemKV(std::string& tabName, std::string& column,
   return 0;
 }
 
-bool Executor::SendUpdateAffectRowsToClient(Client* cli, uint16_t affectRows) {
+bool Executor::SendUpdateAffectRowsToClient(Client* cli, uint8_t seq, uint16_t affectRows) {
   return true;
 }
-
 
 }  // namespace uhp_sql

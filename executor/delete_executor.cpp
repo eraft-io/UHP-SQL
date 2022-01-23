@@ -49,10 +49,27 @@ uint64_t Executor::DeleteRowsInPMemKV(std::string& tabName,
                                       hsql::OperatorType& opType,
                                       std::string& queryFeild,
                                       std::string& queryValue) {
+  uint64_t deletedRows = 0;
+  std::string dbName = Executor::dbmsContext->GetCurDB()->GetDbName();
+  switch(opType){
+    case hsql::OperatorType::kOpEquals:
+    {
+      // del all data
+      if(queryFeild == "1" && queryValue == "1") {
+        std::string tabDataPrefix = "data_" dbName + "_" + tabName + "_p_";
+        
+      }
+
+      // support primary key equal del
+
+      break;
+    }
+  }
+
   return 0;
 }
 
-bool Executor::SendDeleteAffectRowsToClient(Client* cli,uint8_t seq,  uint64_t affectRows) {
+bool Executor::SendDeleteAffectRowsToClient(Client* cli, uint8_t seq,  uint64_t affectRows) {
   SendOkMessageToClient(cli, seq, affectRows, 0, 2, 1);
   return true;
 }

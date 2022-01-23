@@ -89,7 +89,7 @@ bool Executor::Exec(hsql::SQLParserResult& result, Client* cli,
                 (const hsql::InsertStatement*)result.getStatement(i), tabName,
                 row)) {
           auto affectRows = InsertRowToPMemKV(tabName, row);
-          SendInsertAffectRowsToClient(cli, affectRows);
+          SendInsertAffectRowsToClient(cli, pack[3]+1, affectRows);
         } else {
           // TODO: send analyze sql error to cli
         }
@@ -105,7 +105,7 @@ bool Executor::Exec(hsql::SQLParserResult& result, Client* cli,
                 opType, queryFeild, queryValue)) {
           auto affectRows =
               DeleteRowsInPMemKV(tabName, opType, queryFeild, queryValue);
-          SendDeleteAffectRowsToClient(cli, affectRows);
+          SendDeleteAffectRowsToClient(cli, pack[3]+1, affectRows);
         } else {
           // TODO: send analyze sql error to cli
         }
@@ -123,7 +123,7 @@ bool Executor::Exec(hsql::SQLParserResult& result, Client* cli,
                 column, value, opType, queryFeild, queryValue)) {
           auto affectRows = UpdateRowInPMemKV(tabName, column, value, opType,
                                               queryFeild, queryValue);
-          SendUpdateAffectRowsToClient(cli, affectRows);
+          SendUpdateAffectRowsToClient(cli, pack[3]+1, affectRows);
         } else {
           // TODO: send analyze sql error to cli
         }
