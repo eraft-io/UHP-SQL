@@ -35,12 +35,16 @@ class DataTable {
   std::string GetTableName();
   int GetColIndex(std::string col_name);
   hsql::DataType GetColType(std::string col_name);
+  std::map<std::string, hsql::DataType> GetColTypeMap();
+  std::map<std::string, int> GetColIndexMap();
+  std::map<int, std::string> GetIndexColMap();
 
  private:
   std::string table_name_;
   std::vector<TableColumn> cols_;
   std::map<std::string, hsql::DataType> col_type_;  // <colName, type>
   std::map<std::string, int> col_index_;            // col index
+  std::map<int, std::string> index_col_;
 };
 
 }  // namespace uhp_sql

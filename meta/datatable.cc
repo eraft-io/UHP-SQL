@@ -26,14 +26,13 @@ DataTable::DataTable(std::string table_name, std::vector<TableColumn>& cols) {
     cols_.push_back(cols[i]);
     col_type_[cols[i].GetColName()] = cols[i].GetColTyp();
     col_index_[cols[i].GetColName()] = i;
+    index_col_[i] = cols[i].GetColName();
   }
 }
 
 DataTable::~DataTable() {}
 
-bool DataTable::RecoverFromPmemKV() {
-  return true;
-}
+bool DataTable::RecoverFromPmemKV() { return true; }
 
 int DataTable::GetColIndex(std::string col_name) {
   std::map<std::string, int>::iterator it;
@@ -53,6 +52,13 @@ hsql::DataType DataTable::GetColType(std::string col_name) {
   return hsql::DataType::VARCHAR;
 }
 
+std::map<std::string, hsql::DataType> DataTable::GetColTypeMap() {
+  return col_type_;
+}
+std::map<std::string, int> DataTable::GetColIndexMap() { return col_index_; }
+
 std::string DataTable::GetTableName() { return table_name_; }
+
+std::map<int, std::string> DataTable::GetIndexColMap() { return index_col_; }
 
 }  // namespace uhp_sql
