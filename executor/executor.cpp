@@ -68,7 +68,6 @@ bool Executor::Exec(hsql::SQLParserResult& result, Client* cli,
               CreateTableMetaToPMemKV(createTableName, colDefs);
           SendCreateTableResultToClient(cli, pack[3] + 1, affectRows);
         } else {
-          // TODO: send analyze sql error to cli
           uhp_sql::Executor::SendErrorMessageToClient(cli, pack[3] + 1, 50,  "ABCDE", "analyze create table sql error");
         }
         break;
@@ -87,7 +86,7 @@ bool Executor::Exec(hsql::SQLParserResult& result, Client* cli,
                                            queryValue, limit, offset);
           SendResultSetToClient(cli, rows);
         } else {
-          // TODO: send analyze sql error to cli
+          uhp_sql::Executor::SendErrorMessageToClient(cli, pack[3] + 1, 50,  "ABCDE", "analyze create table sql error");
         }
         break;
       }
@@ -100,7 +99,7 @@ bool Executor::Exec(hsql::SQLParserResult& result, Client* cli,
           auto affectRows = InsertRowToPMemKV(tabName, row);
           SendInsertAffectRowsToClient(cli, pack[3] + 1, affectRows);
         } else {
-          // TODO: send analyze sql error to cli
+          uhp_sql::Executor::SendErrorMessageToClient(cli, pack[3] + 1, 50,  "ABCDE", "analyze create table sql error");
         }
         break;
       }
@@ -116,7 +115,7 @@ bool Executor::Exec(hsql::SQLParserResult& result, Client* cli,
               DeleteRowsInPMemKV(tabName, opType, queryFeild, queryValue);
           SendDeleteAffectRowsToClient(cli, pack[3] + 1, affectRows);
         } else {
-          // TODO: send analyze sql error to cli
+          uhp_sql::Executor::SendErrorMessageToClient(cli, pack[3] + 1, 50,  "ABCDE", "analyze delete table sql error");
         }
         break;
       }
@@ -134,7 +133,7 @@ bool Executor::Exec(hsql::SQLParserResult& result, Client* cli,
                                               queryFeild, queryValue);
           SendUpdateAffectRowsToClient(cli, pack[3] + 1, affectRows);
         } else {
-          // TODO: send analyze sql error to cli
+          uhp_sql::Executor::SendErrorMessageToClient(cli, pack[3] + 1, 50,  "ABCDE", "analyze update table sql error");
         }
         break;
       }
@@ -152,7 +151,6 @@ void Executor::SendOkMessageToClient(Client* cli, uint8_t seq,
                                      uint16_t statusFlags, uint16_t warnings) {
   UnboundedBuffer reply_;
   Protocol::OkPacket okPack;
-  //         std::vector<uint8_t> OkPacket = {7, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0};
   std::vector<uint8_t> outPut =
       okPack.Pack(affectedRows, lastInsertID, statusFlags, warnings);
   std::vector<uint8_t> headPack;

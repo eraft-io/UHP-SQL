@@ -61,7 +61,7 @@ uint64_t Executor::DeleteRowsInPMemKV(std::string& tabName,
         for (uint64_t i = 0; i < reply->element[1]->elements * 2;) {
           std::string key = reply->element[1]->element[i]->str;
           auto delReply = (redisReply*)redisCommand(Executor::pmemRedisContext,
-                                                    "DEL %s", key);
+                                                    "DEL %s", key.c_str());
           freeReplyObject(delReply);
           i += 2;
         }
@@ -71,14 +71,14 @@ uint64_t Executor::DeleteRowsInPMemKV(std::string& tabName,
 
       // support primary key equal del
       std::string delKey = tabDataPrefix + queryValue;
-      auto delReply = (redisReply*)redisCommand(Executor::pmemRedisContext,
-                                                "DEL %s", delKey);
+      auto delReply = (redisReply*)redisCommand(Executor::GetContext(),
+                                                "DEL %s", delKey.c_str());
       freeReplyObject(delReply);
       break;
     }
   }
 
-  return 0;
+  return 1;
 }
 
 bool Executor::SendDeleteAffectRowsToClient(Client* cli, uint8_t seq,
