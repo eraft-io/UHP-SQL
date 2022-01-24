@@ -14,6 +14,7 @@
 //
 
 #include "executor.h"
+#include "../network/string_utils.h"
 
 namespace uhp_sql {
 
@@ -25,14 +26,12 @@ bool Executor::AnalyzeUpdateStatement(const hsql::UpdateStatement* stmt,
                                       std::string& queryFeild,
                                       std::string& queryValue) {
   tabName = std::string(stmt->table->name);
+  std::cout << "update size: " << (*stmt->updates).size() << std::endl;
   if(stmt->updates->size() == 0) {
     return false;
   }
-  column = std::string(stmt->updates[0][0]->column);
-  value = std::string(stmt->updates[0][0]->value->name);
-  if(stmt->where) {
-    return false;
-  }
+  column = std::string((*stmt->updates)[0]->column);
+  value = std::string((*stmt->updates)[0]->value->name);
   switch(stmt->where->type) {
     case hsql::kExprStar: {
       break;
@@ -52,7 +51,24 @@ uint64_t Executor::UpdateRowInPMemKV(std::string& tabName, std::string& column,
                                      hsql::OperatorType& opType,
                                      std::string& queryFeild,
                                      std::string& queryValue) {
-              
+                                       // TODO: check if queryFeild is primary key
+  std::string dbName = Executor::dbmsContext->GetCurDB()->GetDbName();
+  std::string key = "data_" + dbName + "_" + tabName + "_p_" + queryValue;
+  std::string oValue;
+  redisReply* reply = static_cast<redisReply*>(redisCommand(
+    Executor::GetContext(), "GET %s", key.c_str()
+  ));
+  if(reply->str != nullptr){
+    oValue = std::string(reply->str);
+    freeReplyObject(reply);
+  }
+  std::vector<std::string> oCols = StringSplit(oValue, "$$");
+  uint64_t index = Executor::dbmsContext->GetCurDB()->GetTable(tabName)->GetColIndex(column);
+  oCols[index] = value;
+  std::string nValue = StringsJoin(oCols, "$$");
+  auto nReply = static_cast<redisReply*>(
+      redisCommand(Executor::GetContext(), "SET %s %s", key.c_str(), nValue.c_str()));
+  freeReplyObject(nReply);
   return 1;
 }
 
