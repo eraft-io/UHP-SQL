@@ -59,7 +59,7 @@ class Executor {
       uint64_t& offset);
 
   static bool SendResultSetToClient(
-      Client* cli, std::vector<std::vector<TableColumn> >& resultSet);
+      Client* cli, uint8_t seq, std::vector<std::vector<TableColumn> >& resultSet);
 
   static bool AnalyzeInsertStatement(const hsql::InsertStatement* stmt,
                                      std::string& tabName,

@@ -68,7 +68,8 @@ bool Executor::Exec(hsql::SQLParserResult& result, Client* cli,
               CreateTableMetaToPMemKV(createTableName, colDefs);
           SendCreateTableResultToClient(cli, pack[3] + 1, affectRows);
         } else {
-          uhp_sql::Executor::SendErrorMessageToClient(cli, pack[3] + 1, 50,  "ABCDE", "analyze create table sql error");
+          uhp_sql::Executor::SendErrorMessageToClient(
+              cli, pack[3] + 1, 50, "ABCDE", "analyze create table sql error");
         }
         break;
       }
@@ -84,9 +85,10 @@ bool Executor::Exec(hsql::SQLParserResult& result, Client* cli,
                 queryTab, queryFeild, queryValue, limit, offset)) {
           auto rows = SelectRowsFromPMemKV(opType, queryTab, queryFeild,
                                            queryValue, limit, offset);
-          SendResultSetToClient(cli, rows);
+          SendResultSetToClient(cli, pack[3] + 1, rows);
         } else {
-          uhp_sql::Executor::SendErrorMessageToClient(cli, pack[3] + 1, 50,  "ABCDE", "analyze create table sql error");
+          uhp_sql::Executor::SendErrorMessageToClient(
+              cli, pack[3] + 1, 50, "ABCDE", "analyze create table sql error");
         }
         break;
       }
@@ -99,7 +101,8 @@ bool Executor::Exec(hsql::SQLParserResult& result, Client* cli,
           auto affectRows = InsertRowToPMemKV(tabName, row);
           SendInsertAffectRowsToClient(cli, pack[3] + 1, affectRows);
         } else {
-          uhp_sql::Executor::SendErrorMessageToClient(cli, pack[3] + 1, 50,  "ABCDE", "analyze create table sql error");
+          uhp_sql::Executor::SendErrorMessageToClient(
+              cli, pack[3] + 1, 50, "ABCDE", "analyze create table sql error");
         }
         break;
       }
@@ -115,7 +118,8 @@ bool Executor::Exec(hsql::SQLParserResult& result, Client* cli,
               DeleteRowsInPMemKV(tabName, opType, queryFeild, queryValue);
           SendDeleteAffectRowsToClient(cli, pack[3] + 1, affectRows);
         } else {
-          uhp_sql::Executor::SendErrorMessageToClient(cli, pack[3] + 1, 50,  "ABCDE", "analyze delete table sql error");
+          uhp_sql::Executor::SendErrorMessageToClient(
+              cli, pack[3] + 1, 50, "ABCDE", "analyze delete table sql error");
         }
         break;
       }
@@ -133,7 +137,8 @@ bool Executor::Exec(hsql::SQLParserResult& result, Client* cli,
                                               queryFeild, queryValue);
           SendUpdateAffectRowsToClient(cli, pack[3] + 1, affectRows);
         } else {
-          uhp_sql::Executor::SendErrorMessageToClient(cli, pack[3] + 1, 50,  "ABCDE", "analyze update table sql error");
+          uhp_sql::Executor::SendErrorMessageToClient(
+              cli, pack[3] + 1, 50, "ABCDE", "analyze update table sql error");
         }
         break;
       }
