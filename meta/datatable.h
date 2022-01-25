@@ -34,6 +34,7 @@ class DataTable {
   bool RecoverFromPmemKV();
   std::string GetTableName();
   int GetColIndex(std::string col_name);
+  uint8_t GetColCount();
   hsql::DataType GetColType(std::string col_name);
   std::map<std::string, hsql::DataType> GetColTypeMap();
   std::map<std::string, int> GetColIndexMap();

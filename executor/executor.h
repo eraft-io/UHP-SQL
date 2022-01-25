@@ -31,87 +31,91 @@ namespace uhp_sql {
 
 class Executor {
  public:
-  static bool Init(std::string pmemRedisIp, uint16_t pmemRedisPort);
+  static bool Init(std::string pmem_redis_ip, uint16_t pmem_redis_port);
 
   static bool Exec(hsql::SQLParserResult& result, Client* cli,
                    std::string& pack);
 
   static bool AnalyzeCreateTableStatement(const hsql::CreateStatement* stmt,
-                                          std::string& tabName,
-                                          std::vector<TableColumn>& colDefs);
+                                          std::string& tab_name,
+                                          std::vector<TableColumn>& col_defs);
 
-  static uint64_t CreateTableMetaToPMemKV(std::string& tabName,
-                                          std::vector<TableColumn>& colDefs);
+  static uint64_t CreateTableMetaToPMemKV(std::string& tab_name,
+                                          std::vector<TableColumn>& col_defs);
 
   static void SendCreateTableResultToClient(Client* cli, uint8_t seq,
-                                            uint8_t affectRows);
+                                            uint8_t affect_rows);
 
   static bool AnalyzeSelectStatement(const hsql::SelectStatement* stmt,
-                                     hsql::OperatorType& opType,
-                                     std::string& queryTab,
-                                     std::string& queryFeild,
-                                     std::string& queryValue, uint64_t& limit,
+                                     hsql::OperatorType& optype,
+                                     std::string& query_tab,
+                                     std::string& query_feild,
+                                     std::string& query_value, uint64_t& limit,
                                      uint64_t& offset);
 
   static std::vector<std::vector<TableColumn> > SelectRowsFromPMemKV(
-      hsql::OperatorType& opType, std::string& queryTab,
-      std::string& queryFeild, std::string& queryValue, uint64_t& limit,
+      hsql::OperatorType& op_type, std::string& query_tab,
+      std::string& query_feild, std::string& query_value, uint64_t& limit,
       uint64_t& offset);
 
   static bool SendResultSetToClient(
-      Client* cli, uint8_t seq, std::vector<std::vector<TableColumn> >& resultSet);
+      Client* cli, uint8_t seq,
+      std::vector<std::vector<TableColumn> >& result_set,
+      std::string& query_tab);
 
   static bool AnalyzeInsertStatement(const hsql::InsertStatement* stmt,
-                                     std::string& tabName,
-                                     std::vector<TableColumn>& resultSet);
+                                     std::string& tab_name,
+                                     std::vector<TableColumn>& result_set);
 
-  static uint64_t InsertRowToPMemKV(std::string& tabName,
+  static uint64_t InsertRowToPMemKV(std::string& tab_name,
                                     std::vector<TableColumn>& row);
 
   static bool SendInsertAffectRowsToClient(Client* cli, uint8_t seq,
-                                           uint64_t affectRows);
+                                           uint64_t affect_rows);
 
   static bool AnalyzeUpdateStatement(const hsql::UpdateStatement* stmt,
-                                     std::string& tabName, std::string& column,
+                                     std::string& tab_name, std::string& column,
                                      std::string& value,
-                                     hsql::OperatorType& opType,
-                                     std::string& queryFeild,
-                                     std::string& queryValue);
+                                     hsql::OperatorType& op_type,
+                                     std::string& query_feild,
+                                     std::string& query_value);
 
-  static uint64_t UpdateRowInPMemKV(std::string& tabName, std::string& column,
+  static uint64_t UpdateRowInPMemKV(std::string& tab_name, std::string& column,
                                     std::string& value,
-                                    hsql::OperatorType& opType,
-                                    std::string& queryFeild,
-                                    std::string& queryValue);
+                                    hsql::OperatorType& op_type,
+                                    std::string& query_feild,
+                                    std::string& query_value);
 
-  static bool SendUpdateAffectRowsToClient(Client* cli, uint8_t seq, uint16_t affectRows);
+  static bool SendUpdateAffectRowsToClient(Client* cli, uint8_t seq,
+                                           uint16_t affect_rows);
 
   static bool AnalyzeDeleteStatement(const hsql::DeleteStatement* stmt,
-                                     std::string& tabName,
-                                     hsql::OperatorType& opType,
-                                     std::string& queryFeild,
-                                     std::string& queryValue);
+                                     std::string& tab_name,
+                                     hsql::OperatorType& op_type,
+                                     std::string& query_feild,
+                                     std::string& query_value);
 
-  static uint64_t DeleteRowsInPMemKV(std::string& tabName,
-                                     hsql::OperatorType& opType,
-                                     std::string& queryFeild,
-                                     std::string& queryValue);
+  static uint64_t DeleteRowsInPMemKV(std::string& tab_name,
+                                     hsql::OperatorType& op_type,
+                                     std::string& query_feild,
+                                     std::string& query_value);
 
   static bool SendDeleteAffectRowsToClient(Client* cli, uint8_t seq,
-                                           uint64_t affectRows);
+                                           uint64_t affect_rows);
 
-  static bool OpenTableInPMemKV(std::string newTab);
+  static bool OpenTableInPMemKV(std::string new_tab);
 
-  static bool DropTableInPMemKV(std::string tabName);
+  static bool DropTableInPMemKV(std::string tab_name);
 
   static void SendErrorMessageToClient(Client* cli, uint8_t seq,
-                                       uint16_t errorCode, std::string sqlState,
-                                       std::string errorMessage);
+                                       uint16_t error_code,
+                                       std::string sql_state,
+                                       std::string error_message);
 
   static void SendOkMessageToClient(Client* cli, uint8_t seq,
-                                    uint64_t affectedRows,
-                                    uint64_t lastInsertID, uint16_t statusFlags,
-                                    uint16_t warnings);
+                                    uint64_t affected_rows,
+                                    uint64_t last_insertID,
+                                    uint16_t status_flags, uint16_t warnings);
 
   static redisContext* GetContext();
 
