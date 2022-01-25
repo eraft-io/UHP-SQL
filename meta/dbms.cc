@@ -19,13 +19,14 @@
 #include <iostream>
 
 #include "../executor/executor.h"
+#include "../network/common.h"
 #include "../third_party/libredis/hiredis.h"
 
 namespace uhp_sql {
 
 DBMS::DBMS() {
   cur_db_ = nullptr;
-  // RecoverFromPmemKV();
+  RecoverFromPmemKV();
 }
 
 DBMS::~DBMS() {}
@@ -65,18 +66,29 @@ bool DBMS::DropDataBase(std::string db_name) {
 }
 
 bool DBMS::RecoverFromPmemKV() {
+  std::cout << "DBMS::RecoverFromPmemKV" << std::endl;
   redisReply* reply = (redisReply*)redisCommand(Executor::GetContext(),
                                                 "SCAN 0 MATCH database_*");
-  for (int i = 0; i < reply->element[1]->elements;) {
-    std::string key = reply->element[1]->element[i++]->str;
-    std::string dbname = reply->element[1]->element[i++]->str;
-    DataBase* newdb = new DataBase(dbname, true);
-    dbs_.insert(std::make_pair(dbname, newdb));
+  if (reply->element != nullptr) {
+    if (reply->element[1]->elements == 0) {
+      CreateDataBase(DEFAULT_DATABASE_NAME);
+      SwitchDB(DEFAULT_DATABASE_NAME);
+      return false;
+    }
+    for (int i = 0; i < reply->element[1]->elements;) {
+      std::string key = reply->element[1]->element[i++]->str;
+      std::string dbname = reply->element[1]->element[i++]->str;
+      std::cout << "database recover " << key << " dbname: " << dbname
+                << std::endl;
+      DataBase* newdb = new DataBase(dbname, true);
+      dbs_.insert(std::make_pair(dbname, newdb));
+      cur_db_ = newdb;
+    }
+    if (reply) {
+      freeReplyObject(reply);
+    }
   }
-  if (reply) {
-    freeReplyObject(reply);
-  }
-  return true;
+  return false;
 }
 
 DataBase* DBMS::GetCurDB() { return cur_db_; }
