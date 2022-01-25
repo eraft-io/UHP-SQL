@@ -16,7 +16,7 @@
 #include "../network/server.h"
 
 #define VERSION "1.0.0"
-#define MOCK_PMEMKV_REDIS_IP "172.17.0.2"
+#define MOCK_PMEMKV_REDIS_IP "127.0.0.1"
 #define MOCK_PMEMKV_REDIS_PORT 6379
 #define DEMO_SERVER_ADDR "0.0.0.0:12306"
 

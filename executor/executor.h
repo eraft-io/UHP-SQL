@@ -59,7 +59,8 @@ class Executor {
       uint64_t& offset);
 
   static bool SendResultSetToClient(
-      Client* cli, uint8_t seq, std::vector<std::vector<TableColumn> >& resultSet);
+      Client* cli, uint8_t seq,
+      std::vector<std::vector<TableColumn> >& resultset, std::string& queryTab);
 
   static bool AnalyzeInsertStatement(const hsql::InsertStatement* stmt,
                                      std::string& tabName,
@@ -84,7 +85,8 @@ class Executor {
                                     std::string& queryFeild,
                                     std::string& queryValue);
 
-  static bool SendUpdateAffectRowsToClient(Client* cli, uint8_t seq, uint16_t affectRows);
+  static bool SendUpdateAffectRowsToClient(Client* cli, uint8_t seq,
+                                           uint16_t affectRows);
 
   static bool AnalyzeDeleteStatement(const hsql::DeleteStatement* stmt,
                                      std::string& tabName,

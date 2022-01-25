@@ -85,7 +85,7 @@ bool Executor::Exec(hsql::SQLParserResult& result, Client* cli,
                 queryTab, queryFeild, queryValue, limit, offset)) {
           auto rows = SelectRowsFromPMemKV(opType, queryTab, queryFeild,
                                            queryValue, limit, offset);
-          SendResultSetToClient(cli, pack[3] + 1, rows);
+          SendResultSetToClient(cli, pack[3] + 1, rows, queryTab);
         } else {
           uhp_sql::Executor::SendErrorMessageToClient(
               cli, pack[3] + 1, 50, "ABCDE", "analyze create table sql error");

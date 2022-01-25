@@ -52,6 +52,7 @@ hsql::DataType DataTable::GetColType(std::string col_name) {
   return hsql::DataType::VARCHAR;
 }
 
+uint8_t DataTable::GetColCount() { return cols_.size(); }
 std::map<std::string, hsql::DataType> DataTable::GetColTypeMap() {
   return col_type_;
 }
