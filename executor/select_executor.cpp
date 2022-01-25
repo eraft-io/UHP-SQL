@@ -89,15 +89,15 @@ std::vector<std::vector<TableColumn> > Executor::SelectRowsFromPMemKV(
 bool Executor::SendResultSetToClient(
     Client* cli, uint8_t seq, std::vector<std::vector<TableColumn> >& resultset,
     std::string& queryTab) {
-  std::cout << "res name : " << resultset[0][0].GetColName() << std::endl;
+  // std::cout << "res name : " << resultset[0][0].GetColName() << std::endl;
   std::string dbname = Executor::dbmsContext->GetCurDB()->GetDbName();
-  // uint8_t seq = 1;
+  seq = 1;
   UnboundedBuffer reply_;
   // Result Set Header
   std::vector<uint8_t> header;
   uint8_t fieldcount =
       Executor::dbmsContext->GetCurDB()->GetTable(queryTab)->GetColCount();
-  header.push_back(fieldcount);
+  header.push_back(1);
   header.push_back(0);
   header.push_back(0);
   header.push_back(seq);
@@ -110,7 +110,7 @@ bool Executor::SendResultSetToClient(
   // Field
   for (int i = 0; i < fieldcount; ++i) {
     std::string colname = resultset[0][i].GetColName();
-    //
+    std::cout << colname << "\n";
     Protocol::FieldPacket new_field_pack(
         colname, static_cast<uint32_t>(TYPE_VARCHAR), queryTab, queryTab,
         dbname, colname, 80, CHARACTER_SET_UTF8, 0, 0);
