@@ -23,10 +23,11 @@ namespace uhp_sql {
 DataTable::DataTable(std::string table_name, std::vector<TableColumn>& cols) {
   table_name_ = table_name;
   for (int i = 0; i < cols.size(); i++) {
-    cols_.push_back(cols[i]);
+    std::cout << "recover col: " << cols[i].GetColName() << std::endl;
     col_type_[cols[i].GetColName()] = cols[i].GetColTyp();
     col_index_[cols[i].GetColName()] = i;
     index_col_[i] = cols[i].GetColName();
+    cols_.push_back(std::move(cols[i]));
   }
 }
 

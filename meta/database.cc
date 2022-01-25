@@ -16,14 +16,16 @@
 
 #include "database.h"
 
-#include "../executor/executor.h"
 #include <iostream>
+
+#include "../executor/executor.h"
+#include "../network/string_utils.h"
 
 namespace uhp_sql {
 
 DataBase::DataBase(std::string db_name, bool needRecover) : db_name_(db_name) {
   table_count_ = 0;
-  if(needRecover){
+  if (needRecover) {
     RecoverFromPmemKV();
   }
 }
@@ -31,7 +33,7 @@ DataBase::DataBase(std::string db_name, bool needRecover) : db_name_(db_name) {
 DataBase::~DataBase() {}
 
 bool DataBase::CreateTable(std::string table_name,
-                                 std::vector<TableColumn>& cols) {
+                           std::vector<TableColumn>& cols) {
   DataTable* newtable = new DataTable(table_name, cols);
   tables_.insert(std::make_pair(table_name, newtable));
   table_count_++;
@@ -46,8 +48,8 @@ bool DataBase::CreateTable(std::string table_name,
     }
   }
 
-  auto reply = static_cast<redisReply*>(
-      redisCommand(Executor::GetContext(), "SET %s %s", key.c_str(), value.c_str()));
+  auto reply = static_cast<redisReply*>(redisCommand(
+      Executor::GetContext(), "SET %s %s", key.c_str(), value.c_str()));
   freeReplyObject(reply);
   std::cout << "create table " << table_name << " ok! " << std::endl;
   return true;
@@ -56,8 +58,8 @@ bool DataBase::CreateTable(std::string table_name,
 bool DataBase::DropTable(std::string table_name) {
   std::string key = "table_" + db_name_ + "_" + table_name;
   std::string value = "";
-  auto reply = static_cast<redisReply*>(
-      redisCommand(Executor::GetContext(), "SET %s %s", key.c_str(), value.c_str()));
+  auto reply = static_cast<redisReply*>(redisCommand(
+      Executor::GetContext(), "SET %s %s", key.c_str(), value.c_str()));
   freeReplyObject(reply);
   table_count_--;
   return true;
@@ -65,17 +67,24 @@ bool DataBase::DropTable(std::string table_name) {
 
 bool DataBase::RecoverFromPmemKV() {
   std::string scankey = "table_" + db_name_ + "_*";
-  redisReply* reply =
-      (redisReply*)redisCommand(Executor::GetContext(), "SCAN 0 MATCH %s", scankey);
-  for (int i = 0; i < reply->element[1]->elements;) {
-    std::string tablename = reply->element[1]->element[i++]->str;
-    std::string table = reply->element[1]->element[i++]->str;
-    std::vector<TableColumn> cols = GetColFromStr(table);
-    DataTable* newtable = new DataTable(tablename, cols);
-    tables_.insert(std::make_pair(tablename, newtable));
-    table_count_++;
+  redisReply* reply = (redisReply*)redisCommand(
+      Executor::GetContext(), "SCAN 0 MATCH %s", scankey.c_str());
+  std::cout << "table recover " << scankey << std::endl;
+  if (reply->element != nullptr) {
+    for (int i = 0; i < reply->element[1]->elements;) {
+      std::string tablenamekey = reply->element[1]->element[i++]->str;
+      std::string table = reply->element[1]->element[i++]->str;
+      std::vector<TableColumn> cols = GetColFromStr(table);
+      std::vector<std::string> keySplits = StringSplit(tablenamekey, "_");
+      std::string tablename = keySplits[keySplits.size() - 1];
+      std::cout << "table recover " << tablename << " table desc " << table
+                << std::endl;
+      DataTable* newtable = new DataTable(tablename, cols);
+      tables_.insert(std::make_pair(tablename, newtable));
+      table_count_++;
+    }
   }
-  if(reply) {
+  if (reply) {
     freeReplyObject(reply);
   }
   return true;
@@ -93,7 +102,7 @@ std::vector<TableColumn> DataBase::GetColFromStr(std::string value) {
     } else if (value[i] == '$') {
       hsql::DataType coltype = hsql::Int2DataType(std::stoi(str));
       TableColumn col(colname, coltype);
-      ans.push_back(col);
+      ans.push_back(std::move(col));
       str = "";
       ++i;
       continue;
@@ -102,7 +111,7 @@ std::vector<TableColumn> DataBase::GetColFromStr(std::string value) {
   }
   hsql::DataType coltype = hsql::Int2DataType(std::stoi(str));
   TableColumn col(colname, coltype);
-  ans.push_back(col);
+  ans.push_back(std::move(col));
   return ans;
 }
 
