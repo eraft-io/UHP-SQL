@@ -13,15 +13,15 @@
 // limitations under the License.
 //
 
-#include "executor.h"
 #include "../network/string_utils.h"
+#include "executor.h"
 
 namespace uhp_sql {
 
 bool Executor::AnalyzeInsertStatement(const hsql::InsertStatement* stmt,
-                                      std::string& tabName,
-                                      std::vector<TableColumn>& resultSet) {
-  tabName = std::string(stmt->tableName);
+                                      std::string& tab_name,
+                                      std::vector<TableColumn>& result_set) {
+  tab_name = std::string(stmt->tableName);
   std::vector<std::string> columnNames;
   for (char* colName : *stmt->columns) {
     columnNames.push_back(std::string(colName));
@@ -42,33 +42,36 @@ bool Executor::AnalyzeInsertStatement(const hsql::InsertStatement* stmt,
   for (uint64_t i = 0; i < columnNames.size(); i++) {
     // TODO: get coltype with table name and col name
     TableColumn tabCol(columnNames[i], hsql::DataType::UNKNOWN, colValues[i]);
-    resultSet.push_back(tabCol);
+    result_set.push_back(tabCol);
   }
   return true;
 }
 
-uint64_t Executor::InsertRowToPMemKV(std::string& tabName,
+uint64_t Executor::InsertRowToPMemKV(std::string& tab_name,
                                      std::vector<TableColumn>& row) {
-  if(row.size() == 0) {
+  if (row.size() == 0) {
     return 0;
   }
-  std::string dbName =  Executor::dbmsContext->GetCurDB()->GetDbName();
-  std::string key = "data_" + dbName + "_" + tabName + "_p_" + row[0].GetVal();
+  std::string dbName = Executor::dbmsContext->GetCurDB()->GetDbName();
+  std::string key = "data_" + dbName + "_" + tab_name + "_p_" + row[0].GetVal();
   std::vector<std::string> vals;
   vals.resize(row.size());
-  for(auto& col: row) {
-    uint64_t index = Executor::dbmsContext->GetCurDB()->GetTable(tabName)->GetColIndex(col.GetColName());
+  for (auto& col : row) {
+    uint64_t index =
+        Executor::dbmsContext->GetCurDB()->GetTable(tab_name)->GetColIndex(
+            col.GetColName());
     vals[index] = col.GetVal();
   }
   std::string value = StringsJoin(vals, "$$");
-  auto reply = static_cast<redisReply*>(
-      redisCommand(Executor::pmemRedisContext, "SET %s %s", key.c_str(), value.c_str()));
+  auto reply = static_cast<redisReply*>(redisCommand(
+      Executor::pmemRedisContext, "SET %s %s", key.c_str(), value.c_str()));
   freeReplyObject(reply);
   return 1;
 }
 
-bool Executor::SendInsertAffectRowsToClient(Client* cli, uint8_t seq, uint64_t affectRows) {
-  SendOkMessageToClient(cli, seq, affectRows, 0, 2, 0);
+bool Executor::SendInsertAffectRowsToClient(Client* cli, uint8_t seq,
+                                            uint64_t affect_rows) {
+  SendOkMessageToClient(cli, seq, affect_rows, 0, 2, 0);
   return true;
 }
 

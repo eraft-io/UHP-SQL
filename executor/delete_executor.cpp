@@ -18,17 +18,17 @@
 namespace uhp_sql {
 
 bool Executor::AnalyzeDeleteStatement(const hsql::DeleteStatement* stmt,
-                                      std::string& tabName,
-                                      hsql::OperatorType& opType,
-                                      std::string& queryFeild,
-                                      std::string& queryValue) {
-  tabName = std::string(stmt->tableName);
+                                      std::string& tab_name,
+                                      hsql::OperatorType& op_type,
+                                      std::string& query_feild,
+                                      std::string& query_value) {
+  tab_name = std::string(stmt->tableName);
   hsql::Expr* expr = stmt->expr;
   if (!expr) {
     // delete all data
-    queryFeild = "1";
-    queryValue = "1";
-    opType = hsql::OperatorType::kOpEquals;
+    query_feild = "1";
+    query_value = "1";
+    op_type = hsql::OperatorType::kOpEquals;
     return true;
   }
   switch (expr->type) {
@@ -36,26 +36,26 @@ bool Executor::AnalyzeDeleteStatement(const hsql::DeleteStatement* stmt,
       break;
     }
     case hsql::kExprOperator: {
-      opType = expr->opType;
-      queryFeild = expr->expr->name;
-      queryValue = expr->expr2->name;
+      op_type = expr->opType;
+      query_feild = expr->expr->name;
+      query_value = expr->expr2->name;
       break;
     }
   }
   return true;
 }
 
-uint64_t Executor::DeleteRowsInPMemKV(std::string& tabName,
-                                      hsql::OperatorType& opType,
-                                      std::string& queryFeild,
-                                      std::string& queryValue) {
+uint64_t Executor::DeleteRowsInPMemKV(std::string& tab_name,
+                                      hsql::OperatorType& op_type,
+                                      std::string& query_feild,
+                                      std::string& query_value) {
   uint64_t deletedRows = 0;
   std::string dbName = Executor::dbmsContext->GetCurDB()->GetDbName();
-  switch (opType) {
+  switch (op_type) {
     case hsql::OperatorType::kOpEquals: {
       // del all data
-      std::string tabDataPrefix = "data_" + dbName + "_" + tabName + "_p_";
-      if (queryFeild == "1" && queryValue == "1") {
+      std::string tabDataPrefix = "data_" + dbName + "_" + tab_name + "_p_";
+      if (query_feild == "1" && query_value == "1") {
         auto reply = (redisReply*)redisCommand(
             Executor::pmemRedisContext, "SCAN %d MATCH %s", 0, tabDataPrefix);
         for (uint64_t i = 0; i < reply->element[1]->elements * 2;) {
@@ -70,7 +70,7 @@ uint64_t Executor::DeleteRowsInPMemKV(std::string& tabName,
       // check query if query feild is primary key, if not return not support
 
       // support primary key equal del
-      std::string delKey = tabDataPrefix + queryValue;
+      std::string delKey = tabDataPrefix + query_value;
       auto delReply = (redisReply*)redisCommand(Executor::GetContext(),
                                                 "DEL %s", delKey.c_str());
       freeReplyObject(delReply);

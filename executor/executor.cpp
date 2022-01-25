@@ -28,12 +28,12 @@ namespace uhp_sql {
 redisContext* Executor::pmemRedisContext = nullptr;
 DBMS* Executor::dbmsContext = nullptr;
 
-bool Executor::Init(std::string pmemRedisIp, uint16_t pmemRedisPort) {
+bool Executor::Init(std::string pmem_redis_ip, uint16_t pmem_redis_port) {
   redisReply* reply;
   // TODO: need to configurable
   struct timeval timeout = {1, 500000};  // 1.5 seconds
   pmemRedisContext =
-      redisConnectWithTimeout(pmemRedisIp.c_str(), pmemRedisPort, timeout);
+      redisConnectWithTimeout(pmem_redis_ip.c_str(), pmem_redis_port, timeout);
 
   if (pmemRedisContext == NULL || pmemRedisContext->err) {
     if (pmemRedisContext) {
@@ -151,13 +151,13 @@ bool Executor::Exec(hsql::SQLParserResult& result, Client* cli,
 }
 
 void Executor::SendOkMessageToClient(Client* cli, uint8_t seq,
-                                     uint64_t affectedRows,
-                                     uint64_t lastInsertID,
-                                     uint16_t statusFlags, uint16_t warnings) {
+                                     uint64_t affected_rows,
+                                     uint64_t last_insertID,
+                                     uint16_t status_flags, uint16_t warnings) {
   UnboundedBuffer reply_;
   Protocol::OkPacket okPack;
   std::vector<uint8_t> outPut =
-      okPack.Pack(affectedRows, lastInsertID, statusFlags, warnings);
+      okPack.Pack(affected_rows, last_insertID, status_flags, warnings);
   std::vector<uint8_t> headPack;
   headPack.push_back(outPut.size());
   headPack.push_back(0);
@@ -175,17 +175,17 @@ Executor::Executor() {}
 
 Executor::~Executor() {}
 
-bool Executor::OpenTableInPMemKV(std::string newTab) { return true; }
+bool Executor::OpenTableInPMemKV(std::string new_tab) { return true; }
 
-bool Executor::DropTableInPMemKV(std::string tabName) { return true; }
+bool Executor::DropTableInPMemKV(std::string tab_name) { return true; }
 
 void Executor::SendErrorMessageToClient(Client* cli, uint8_t seq,
-                                        uint16_t errorCode,
-                                        std::string sqlState,
-                                        std::string errorMessage) {
+                                        uint16_t error_code,
+                                        std::string sql_state,
+                                        std::string error_message) {
   Protocol::ErrPacket err;
   UnboundedBuffer reply_;
-  std::vector<uint8_t> errPack = err.Pack(errorCode, sqlState, errorMessage);
+  std::vector<uint8_t> errPack = err.Pack(error_code, sql_state, error_message);
   std::vector<uint8_t> returnPack;
   uint8_t size = errPack.size();
   returnPack.push_back(size);
