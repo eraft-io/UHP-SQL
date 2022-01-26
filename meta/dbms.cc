@@ -113,6 +113,7 @@ bool DBMS::SwitchDB(std::string db_name) {
     std::cout << "Switch DB failed!\n";
     return false;
   }
+  return true;
 }
 
 }  // namespace uhp_sql
