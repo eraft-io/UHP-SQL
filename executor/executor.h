@@ -63,6 +63,8 @@ class Executor {
       std::vector<std::vector<TableColumn> >& result_set,
       std::string& query_tab);
 
+  static std::vector<TableColumn> DecodeRowResult(std::string res, std::string tab);
+
   static bool AnalyzeInsertStatement(const hsql::InsertStatement* stmt,
                                      std::string& tab_name,
                                      std::vector<TableColumn>& result_set);
