@@ -13,22 +13,65 @@
 // limitations under the License.
 //
 
+#include "../network/string_utils.h"
 #include "executor.h"
 
 namespace uhp_sql {
 
 bool Executor::AnalyzeInsertStatement(const hsql::InsertStatement* stmt,
-                                      std::string& tabName,
-                                      std::vector<TableColumn>& resultSet) {
+                                      std::string& tab_name,
+                                      std::vector<TableColumn>& result_set) {
+  tab_name = std::string(stmt->tableName);
+  std::vector<std::string> columnNames;
+  for (char* colName : *stmt->columns) {
+    columnNames.push_back(std::string(colName));
+  }
+  std::vector<std::string> colValues;
+  for (hsql::Expr* expr : *stmt->values) {
+    switch (expr->type) {
+      case hsql::kExprLiteralString: {
+        colValues.push_back(expr->name);
+        break;
+      }
+      case hsql::kExprLiteralInt: {
+        colValues.push_back(std::to_string(expr->ival));
+        break;
+      }
+    }
+  }
+  for (uint64_t i = 0; i < columnNames.size(); i++) {
+    // TODO: get coltype with table name and col name
+    TableColumn tabCol(columnNames[i], hsql::DataType::UNKNOWN, colValues[i]);
+    result_set.push_back(tabCol);
+  }
   return true;
 }
 
-uint64_t Executor::InsertRowToPMemKV(std::string& tabName,
+uint64_t Executor::InsertRowToPMemKV(std::string& tab_name,
                                      std::vector<TableColumn>& row) {
-  return 0;
+  if (row.size() == 0) {
+    return 0;
+  }
+  std::string dbName = Executor::dbmsContext->GetCurDB()->GetDbName();
+  std::string key = "data_" + dbName + "_" + tab_name + "_p_" + row[0].GetVal();
+  std::vector<std::string> vals;
+  vals.resize(row.size());
+  for (auto& col : row) {
+    uint64_t index =
+        Executor::dbmsContext->GetCurDB()->GetTable(tab_name)->GetColIndex(
+            col.GetColName());
+    vals[index] = col.GetVal();
+  }
+  std::string value = StringsJoin(vals, "$$");
+  auto reply = static_cast<redisReply*>(redisCommand(
+      Executor::pmemRedisContext, "SET %s %s", key.c_str(), value.c_str()));
+  freeReplyObject(reply);
+  return 1;
 }
 
-bool Executor::SendInsertAffectRowsToClient(Client* cli, uint64_t affectRows) {
+bool Executor::SendInsertAffectRowsToClient(Client* cli, uint8_t seq,
+                                            uint64_t affect_rows) {
+  SendOkMessageToClient(cli, seq, affect_rows, 0, 2, 0);
   return true;
 }
 

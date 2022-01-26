@@ -18,11 +18,20 @@
 
 namespace uhp_sql {
 
-TableColumn::TableColumn(std::string col_name, hsql::DataType col_type) {}
+TableColumn::TableColumn(std::string col_name, hsql::DataType col_type)
+    : col_name_(col_name), col_type_(col_type) {
+  val_ = "";
+}
 
 TableColumn::TableColumn(std::string col_name, hsql::DataType col_type,
-                         std::string val) {}
+                         std::string val)
+    : col_name_(col_name), col_type_(col_type), val_(val) {}
 
 TableColumn::~TableColumn() {}
+
+std::string TableColumn::GetColName() { return col_name_; }
+int TableColumn::GetColType() { return hsql::DataType2Int(col_type_); }
+hsql::DataType TableColumn::GetColTyp() { return col_type_; }
+std::string TableColumn::GetVal() { return val_; }
 
 }  // namespace uhp_sql

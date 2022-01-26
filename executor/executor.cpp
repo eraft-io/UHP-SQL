@@ -15,6 +15,8 @@
 
 #include "executor.h"
 
+#include <iostream>
+
 #include "../network/common.h"
 #include "../network/eof.h"
 #include "../network/err.h"
@@ -24,13 +26,14 @@
 namespace uhp_sql {
 
 redisContext* Executor::pmemRedisContext = nullptr;
+DBMS* Executor::dbmsContext = nullptr;
 
-bool Executor::Init(std::string pmemRedisIp, uint16_t pmemRedisPort) {
+bool Executor::Init(std::string pmem_redis_ip, uint16_t pmem_redis_port) {
   redisReply* reply;
   // TODO: need to configurable
   struct timeval timeout = {1, 500000};  // 1.5 seconds
   pmemRedisContext =
-      redisConnectWithTimeout(pmemRedisIp.c_str(), pmemRedisPort, timeout);
+      redisConnectWithTimeout(pmem_redis_ip.c_str(), pmem_redis_port, timeout);
 
   if (pmemRedisContext == NULL || pmemRedisContext->err) {
     if (pmemRedisContext) {
@@ -41,6 +44,14 @@ bool Executor::Init(std::string pmemRedisIp, uint16_t pmemRedisPort) {
     }
     return false;
   }
+
+  std::cout << "connect to pmem redis ok! " << std::endl;
+  auto pmemkvReply = static_cast<redisReply*>(redisCommand(
+      Executor::GetContext(), "SET %s %s", "pmemaddr", pmem_redis_ip.c_str()));
+  freeReplyObject(pmemkvReply);
+  dbmsContext = new DBMS();
+  // create default db and switch to it
+
   return true;
 }
 
@@ -49,7 +60,7 @@ bool Executor::Exec(hsql::SQLParserResult& result, Client* cli,
   UnboundedBuffer reply_;
   for (size_t i = 0u; i < result.size(); ++i) {
     switch (result.getStatement(i)->type()) {
-      case hsql::kCreateTable: {
+      case hsql::kStmtCreate: {
         std::string createTableName;
         std::vector<TableColumn> colDefs;
         if (AnalyzeCreateTableStatement(
@@ -57,9 +68,10 @@ bool Executor::Exec(hsql::SQLParserResult& result, Client* cli,
                 createTableName, colDefs)) {
           uint64_t affectRows =
               CreateTableMetaToPMemKV(createTableName, colDefs);
-          SendCreateTableResultToClient(cli, affectRows);
+          SendCreateTableResultToClient(cli, pack[3] + 1, affectRows);
         } else {
-          // TODO: send analyze sql error to cli
+          uhp_sql::Executor::SendErrorMessageToClient(
+              cli, pack[3] + 1, 50, "ABCDE", "analyze create table sql error");
         }
         break;
       }
@@ -75,9 +87,10 @@ bool Executor::Exec(hsql::SQLParserResult& result, Client* cli,
                 queryTab, queryFeild, queryValue, limit, offset)) {
           auto rows = SelectRowsFromPMemKV(opType, queryTab, queryFeild,
                                            queryValue, limit, offset);
-          SendResultSetToClient(cli, rows);
+          SendResultSetToClient(cli, pack[3] + 1, rows, queryTab);
         } else {
-          // TODO: send analyze sql error to cli
+          uhp_sql::Executor::SendErrorMessageToClient(
+              cli, pack[3] + 1, 50, "ABCDE", "analyze create table sql error");
         }
         break;
       }
@@ -88,9 +101,10 @@ bool Executor::Exec(hsql::SQLParserResult& result, Client* cli,
                 (const hsql::InsertStatement*)result.getStatement(i), tabName,
                 row)) {
           auto affectRows = InsertRowToPMemKV(tabName, row);
-          SendInsertAffectRowsToClient(cli, affectRows);
+          SendInsertAffectRowsToClient(cli, pack[3] + 1, affectRows);
         } else {
-          // TODO: send analyze sql error to cli
+          uhp_sql::Executor::SendErrorMessageToClient(
+              cli, pack[3] + 1, 50, "ABCDE", "analyze create table sql error");
         }
         break;
       }
@@ -104,9 +118,10 @@ bool Executor::Exec(hsql::SQLParserResult& result, Client* cli,
                 opType, queryFeild, queryValue)) {
           auto affectRows =
               DeleteRowsInPMemKV(tabName, opType, queryFeild, queryValue);
-          SendDeleteAffectRowsToClient(cli, affectRows);
+          SendDeleteAffectRowsToClient(cli, pack[3] + 1, affectRows);
         } else {
-          // TODO: send analyze sql error to cli
+          uhp_sql::Executor::SendErrorMessageToClient(
+              cli, pack[3] + 1, 50, "ABCDE", "analyze delete table sql error");
         }
         break;
       }
@@ -122,42 +137,57 @@ bool Executor::Exec(hsql::SQLParserResult& result, Client* cli,
                 column, value, opType, queryFeild, queryValue)) {
           auto affectRows = UpdateRowInPMemKV(tabName, column, value, opType,
                                               queryFeild, queryValue);
-          SendUpdateAffectRowsToClient(cli, affectRows);
+          SendUpdateAffectRowsToClient(cli, pack[3] + 1, affectRows);
         } else {
-          // TODO: send analyze sql error to cli
+          uhp_sql::Executor::SendErrorMessageToClient(
+              cli, pack[3] + 1, 50, "ABCDE", "analyze update table sql error");
         }
         break;
       }
       default: {
-        Protocol::OkPacket okPack;
-        std::vector<uint8_t> outPut = okPack.Pack(0, 0, 2, 1);
-        outPut[3] = pack[3] + 1;
-        reply_.PushData(std::string(outPut.begin(), outPut.end()).c_str(),
-                        outPut.size());
-        cli->SendPacket(reply_);
-        reply_.Clear();
+        SendOkMessageToClient(cli, pack[3] + 1, 0, 0, 2, 1);
       }
     }
   }
   return true;
 }
 
+void Executor::SendOkMessageToClient(Client* cli, uint8_t seq,
+                                     uint64_t affected_rows,
+                                     uint64_t last_insertID,
+                                     uint16_t status_flags, uint16_t warnings) {
+  UnboundedBuffer reply_;
+  Protocol::OkPacket okPack;
+  std::vector<uint8_t> outPut =
+      okPack.Pack(affected_rows, last_insertID, status_flags, warnings);
+  std::vector<uint8_t> headPack;
+  headPack.push_back(outPut.size());
+  headPack.push_back(0);
+  headPack.push_back(0);
+  headPack.push_back(seq);
+  reply_.PushData(std::string(headPack.begin(), headPack.end()).c_str(),
+                  headPack.size());
+  reply_.PushData(std::string(outPut.begin(), outPut.end()).c_str(),
+                  outPut.size());
+  cli->SendPacket(reply_);
+  reply_.Clear();
+}
+
 Executor::Executor() {}
 
 Executor::~Executor() {}
 
+bool Executor::OpenTableInPMemKV(std::string new_tab) { return true; }
 
-bool Executor::OpenTableInPMemKV(std::string newTab) { return true; }
-
-bool Executor::DropTableInPMemKV(std::string tabName) { return true; }
+bool Executor::DropTableInPMemKV(std::string tab_name) { return true; }
 
 void Executor::SendErrorMessageToClient(Client* cli, uint8_t seq,
-                                        uint16_t errorCode,
-                                        std::string sqlState,
-                                        std::string errorMessage) {
+                                        uint16_t error_code,
+                                        std::string sql_state,
+                                        std::string error_message) {
   Protocol::ErrPacket err;
   UnboundedBuffer reply_;
-  std::vector<uint8_t> errPack = err.Pack(errorCode, sqlState, errorMessage);
+  std::vector<uint8_t> errPack = err.Pack(error_code, sql_state, error_message);
   std::vector<uint8_t> returnPack;
   uint8_t size = errPack.size();
   returnPack.push_back(size);
@@ -170,5 +200,7 @@ void Executor::SendErrorMessageToClient(Client* cli, uint8_t seq,
   cli->SendPacket(reply_);
   reply_.Clear();
 }
+
+redisContext* Executor::GetContext() { return pmemRedisContext; }
 
 }  // namespace uhp_sql

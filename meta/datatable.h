@@ -22,22 +22,30 @@
 #include <string>
 #include <vector>
 
-#include "tablecolumn.h"
 #include "../third_party/libredis/hiredis.h"
+#include "tablecolumn.h"
 
 namespace uhp_sql {
 
 class DataTable {
  public:
-  DataTable();
+  DataTable(std::string table_name, std::vector<TableColumn>& cols);
   ~DataTable();
   bool RecoverFromPmemKV();
+  std::string GetTableName();
+  int GetColIndex(std::string col_name);
+  uint8_t GetColCount();
+  hsql::DataType GetColType(std::string col_name);
+  std::map<std::string, hsql::DataType> GetColTypeMap();
+  std::map<std::string, int> GetColIndexMap();
+  std::map<int, std::string> GetIndexColMap();
 
  private:
-  static redisContext* pmemRedisContext;
-
-  std::vector<TableColumn> cols;
-  std::map<std::string, hsql::DataType> type_map;  // <colName, type>
+  std::string table_name_;
+  std::vector<TableColumn> cols_;
+  std::map<std::string, hsql::DataType> col_type_;  // <colName, type>
+  std::map<std::string, int> col_index_;            // col index
+  std::map<int, std::string> index_col_;
 };
 
 }  // namespace uhp_sql

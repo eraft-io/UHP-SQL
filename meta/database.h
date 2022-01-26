@@ -22,25 +22,26 @@
 #include <string>
 #include <unordered_map>
 
+#include "../third_party/libredis/hiredis.h"
 #include "datatable.h"
 #include "tablecolumn.h"
-#include "../third_party/libredis/hiredis.h"
 
 namespace uhp_sql {
 
 class DataBase {
  public:
-  DataBase();
+  DataBase(std::string db_name, bool needRecover);
   ~DataBase();
-  DataTable* CreateTable(std::string table_name,
-                         std::vector<TableColumn*> cols);
+  bool CreateTable(std::string table_name,
+                         std::vector<TableColumn>& cols);
 
   bool DropTable(std::string table_name);
   bool RecoverFromPmemKV();
+  std::vector<TableColumn> GetColFromStr(std::string value);
+  std::string GetDbName();
   DataTable* GetTable(std::string table_name);
 
  private:
-  static redisContext* pmemRedisContext;
 
   std::atomic<int> table_count_;
 

@@ -25,7 +25,7 @@ struct SocketAddr;
 class Server {
  protected:
   virtual bool _RunLogic();
-  virtual bool _Recycle() {}
+  virtual bool _Recycle() { return true; }
   virtual bool _Init() = 0;
 
   Server();

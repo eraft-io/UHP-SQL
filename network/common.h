@@ -21,6 +21,7 @@
 #include <vector>
 
 #define CRLF "\r\n"
+#define DEFAULT_DATABASE_NAME "default"
 
 enum Error {
   Error_nop = -1,

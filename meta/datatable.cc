@@ -16,12 +16,51 @@
 
 #include "datatable.h"
 
+#include "../executor/executor.h"
+
 namespace uhp_sql {
 
-DataTable::DataTable() {}
+DataTable::DataTable(std::string table_name, std::vector<TableColumn>& cols) {
+  table_name_ = table_name;
+  for (int i = 0; i < cols.size(); i++) {
+    std::cout << "recover col: " << cols[i].GetColName() << std::endl;
+    col_type_[cols[i].GetColName()] = cols[i].GetColTyp();
+    col_index_[cols[i].GetColName()] = i;
+    index_col_[i] = cols[i].GetColName();
+    cols_.push_back(std::move(cols[i]));
+  }
+}
 
 DataTable::~DataTable() {}
 
-bool DataTable::RecoverFromPmemKV() {}
+bool DataTable::RecoverFromPmemKV() { return true; }
+
+int DataTable::GetColIndex(std::string col_name) {
+  std::map<std::string, int>::iterator it;
+  it = col_index_.find(col_name);
+  if (it != col_index_.end()) {
+    return it->second;
+  }
+  return -1;
+}
+
+hsql::DataType DataTable::GetColType(std::string col_name) {
+  std::map<std::string, hsql::DataType>::iterator it;
+  it = col_type_.find(col_name);
+  if (it != col_type_.end()) {
+    return it->second;
+  }
+  return hsql::DataType::VARCHAR;
+}
+
+uint8_t DataTable::GetColCount() { return cols_.size(); }
+std::map<std::string, hsql::DataType> DataTable::GetColTypeMap() {
+  return col_type_;
+}
+std::map<std::string, int> DataTable::GetColIndexMap() { return col_index_; }
+
+std::string DataTable::GetTableName() { return table_name_; }
+
+std::map<int, std::string> DataTable::GetIndexColMap() { return index_col_; }
 
 }  // namespace uhp_sql
