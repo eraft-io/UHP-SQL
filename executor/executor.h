@@ -51,12 +51,12 @@ class Executor {
                                      std::string& query_tab,
                                      std::string& query_feild,
                                      std::string& query_value, uint64_t& limit,
-                                     uint64_t& offset);
+                                     uint64_t& offset, bool& scan_all);
 
   static std::vector<std::vector<TableColumn> > SelectRowsFromPMemKV(
       hsql::OperatorType& op_type, std::string& query_tab,
       std::string& query_feild, std::string& query_value, uint64_t& limit,
-      uint64_t& offset);
+      uint64_t& offset, bool& scan_all);
 
   static bool SendResultSetToClient(
       Client* cli, uint8_t seq,
