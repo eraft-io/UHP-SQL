@@ -44,7 +44,6 @@ bool Executor::Init(std::string pmem_redis_ip, uint16_t pmem_redis_port) {
     }
     return false;
   }
-
   std::cout << "connect to pmem redis ok! " << std::endl;
   auto pmemkvReply = static_cast<redisReply*>(redisCommand(
       Executor::GetContext(), "SET %s %s", "pmemaddr", pmem_redis_ip.c_str()));

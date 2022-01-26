@@ -25,7 +25,9 @@ bool Executor::AnalyzeUpdateStatement(const hsql::UpdateStatement* stmt,
                                       std::string& query_feild,
                                       std::string& query_value) {
   tab_name = std::string(stmt->table->name);
-  std::cout << "update size: " << (*stmt->updates).size() << std::endl;
+  if (!Executor::dbmsContext->HasTable(tab_name)) {
+    return false;
+  }
   if (stmt->updates->size() == 0) {
     return false;
   }
@@ -59,6 +61,9 @@ uint64_t Executor::UpdateRowInPMemKV(std::string& tab_name, std::string& column,
   if (reply->str != nullptr) {
     o_value = std::string(reply->str);
     freeReplyObject(reply);
+  } else {
+    // no key find
+    return 0;
   }
   std::vector<std::string> o_cols = StringSplit(o_value, "$$");
   uint64_t index =

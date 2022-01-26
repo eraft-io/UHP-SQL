@@ -23,6 +23,9 @@ bool Executor::AnalyzeDeleteStatement(const hsql::DeleteStatement* stmt,
                                       std::string& query_feild,
                                       std::string& query_value) {
   tab_name = std::string(stmt->tableName);
+  if(!Executor::dbmsContext->HasTable(tab_name)) {
+    return false;
+  }
   hsql::Expr* expr = stmt->expr;
   if (!expr) {
     // delete all data
