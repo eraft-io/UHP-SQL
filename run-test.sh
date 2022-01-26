@@ -2,9 +2,8 @@
 
 set -e
 
-# mock pmemkv redis
-nohup redis-server &
+nohup ./home/user/pmemkv/build_/network/pmemkv_redisd /pmem_redis.toml &
 
+sleep 2s
 # run server
-# /UHP-SQL/build/server/uhpsqld
-/bin/bash
+/UHP-SQL/build/server/uhpsqld

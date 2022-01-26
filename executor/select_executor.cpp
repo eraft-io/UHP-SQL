@@ -29,14 +29,15 @@ namespace uhp_sql
                                         std::string &query_tab,
                                         std::string &query_feild,
                                         std::string &query_value, uint64_t &limit,
-                                        uint64_t &offset)
+                                        uint64_t &offset, bool &scan_all)
   {
     query_tab = stmt->fromTable->name;
     hsql::Expr *expr = stmt->whereClause;
     if (!expr)
     {
       // SELECT * FROM tab; scan all data
-      return false;
+      scan_all = true;
+      return true;
     }
     switch (expr->type)
     {
@@ -83,9 +84,41 @@ namespace uhp_sql
   std::vector<std::vector<TableColumn> > Executor::SelectRowsFromPMemKV(
       hsql::OperatorType &op_type, std::string &query_tab,
       std::string &query_feild, std::string &query_value, uint64_t &limit,
-      uint64_t &offset)
+      uint64_t &offset, bool &scan_all)
   {
     std::vector<std::vector<TableColumn> > rows = {};
+    if (scan_all)
+    {
+      std::string dbName = Executor::dbmsContext->GetCurDB()->GetDbName();
+      std::string key =
+          "data_" + dbName + "_" + query_tab + "_p_" + "*";
+      redisReply *reply = (redisReply *)redisCommand(Executor::GetContext(),
+                                                     "SCAN 0 MATCH %s COUNT 100", key.c_str());
+      if (reply->element != nullptr)
+      {
+        if (reply->element[1]->elements == 0)
+        {
+          return rows;
+        }
+        for (int i = 0; i < reply->element[1]->elements;)
+        {
+          if (limit != 0 && i > limit * 2)
+          {
+            break;
+          }
+          std::string pkey = reply->element[1]->element[i++]->str;
+          std::string rowVal = reply->element[1]->element[i++]->str;
+          std::cout << "return " << pkey << " to cli " << std::endl;
+          auto row = DecodeRowResult(rowVal, query_tab);
+          rows.push_back(std::move(row));
+        }
+        if (reply)
+        {
+          freeReplyObject(reply);
+        }
+      }
+      return rows;
+    }
     switch (op_type)
     {
     case hsql::kOpEquals:
@@ -287,8 +320,6 @@ namespace uhp_sql
                     outPack1.size());
     cli->SendPacket(reply_);
     reply_.Clear();
-
-    // SendOkMessageToClient(cli, seq, 0, 0, 2, 0);
     return true;
   }
 

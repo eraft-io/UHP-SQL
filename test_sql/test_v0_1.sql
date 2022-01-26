@@ -39,7 +39,6 @@ VALUES
 'B', 
 '90');
 
-
 SELECT * from classtab WHERE Name = 'Tom';
 
 UPDATE classtab  SET Score='78' WHERE Name='Tom';

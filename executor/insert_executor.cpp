@@ -22,6 +22,11 @@ bool Executor::AnalyzeInsertStatement(const hsql::InsertStatement* stmt,
                                       std::string& tab_name,
                                       std::vector<TableColumn>& result_set) {
   tab_name = std::string(stmt->tableName);
+  // check if table exists
+  DataTable* resTable = Executor::dbmsContext->GetCurDB()->GetTable(tab_name);
+  if(resTable == nullptr) {
+    return false;
+  }
   std::vector<std::string> columnNames;
   for (char* colName : *stmt->columns) {
     columnNames.push_back(std::string(colName));
