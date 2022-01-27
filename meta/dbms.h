@@ -45,6 +45,8 @@ class DBMS {
   DataBase* GetCurDB();
   bool SwitchDB(std::string db_name);
 
+  bool HasTable(std::string tab_name);
+
  private:
   std::unordered_map<std::string, DataBase*> dbs_;
 

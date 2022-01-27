@@ -41,15 +41,10 @@ PacketLength Client::_HandlePacket(const char *start, std::size_t bytes) {
   Protocol::AuthPacket ap;
   std::vector<uint8_t> OkPacket = {7, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0};
   OkPacket[3] = start[3] + 1;
-
-  std::cout << "handle packet size: " << bytes << std::endl;
-
   std::string pack = std::string(start, end);
-  //   std::cout << pack << std::endl;
   std::string queryStr = std::string(start + 5, end);
 
   if (pack[3] == INIT_PACKET_CNT) {
-    // 登陆认证
     auto authPkt = std::vector<uint8_t>(pack.begin() + 4, pack.end());
     ap.UnPack(authPkt);
     std::cout << "UserName: " << ap.GetUserName() << std::endl;
@@ -57,18 +52,14 @@ PacketLength Client::_HandlePacket(const char *start, std::size_t bytes) {
     std::cout << "DataBaseName: " << ap.GetDatabaseName() << std::endl;
     reply_.PushData(std::string(OkPacket.begin(), OkPacket.end()).c_str(),
                     OkPacket.size());
-    // 返回认证结果
     SendPacket(reply_);
     _Reset();
     return static_cast<PacketLength>(bytes);
   } else {
-    // 执行命令
-    std::cout << "query str: " << queryStr << std::endl;
     if(queryStr != "select @@version_comment limit 1") {
         hsql::SQLParserResult result;
         hsql::SQLParser::parse(queryStr, &result);
         if (result.isValid()) {
-          std::cout << "Parsed successfully!\n";
           uhp_sql::Executor::Exec(result, this, pack);
         } else {
           uhp_sql::Executor::SendErrorMessageToClient(this, pack[3] + 1, 50,  "ABCDE", std::string(result.errorMsg()));
@@ -97,7 +88,6 @@ void Client::OnConnect() {
   std::cout << "new client comming!" << std::endl;
   std::vector<uint8_t> greetingPacket;
 
-  // 握手初始化
   Protocol::GreetingPacket gp(1, "UHP-SQL-v0.1");
   std::vector<uint8_t> outputPacket = gp.Pack();
   greetingPacket.push_back(outputPacket.size());
