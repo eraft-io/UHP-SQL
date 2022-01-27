@@ -11,3 +11,8 @@ mkdir -p $build_dir && cd $build_dir
 cmake "$SRCPATH" \
     -DENABLE_TESTS=on
 make
+
+# API authentication: n2GTL3AIoDLFLVo76MnGDw
+
+# Assets authentication: SgKxgZU3qPPzGUAGqRDd
+

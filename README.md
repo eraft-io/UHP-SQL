@@ -1,3 +1,4 @@
+
 # UHP-SQL
 UHP-SQL 是一个基于 [英特尔® 傲腾™ 持久内存 ](https://www.intel.cn/content/www/cn/zh/architecture-and-technology/optane-dc-persistent-memory.html) 设计的新型分布式关系型数据库系统。
 
@@ -40,19 +41,212 @@ make run
 mysql --host 127.0.0.1 --port 12306 -u root
 ```
 
-#### 4.读写测试
-```
-INSERT INTO test(id, comment) VALUES (666, 'hello UHP-SQL!');
+#### 4.SQL测试
 
-SELECT * FROM test where id = '666';
-```
-运行结果
+1) 建表
 
 ```
-+---------------------+
-| ALL                 |
-+---------------------+
-| 666,hello UHP-SQL!, |
-+---------------------+
-1 row in set (0.01 sec)
+CREATE TABLE classtab 
+( 
+    Name VARCHAR(100), 
+    Class VARCHAR(100), 
+    Score INT, 
+    PRIMARY KEY(Name)
+);
 ```
+
+```
+mysql> CREATE TABLE classtab
+    -> (
+    -> Name VARCHAR(100),
+    -> Class VARCHAR(100),
+    -> Score INT,
+    -> PRIMARY KEY(Name)
+    -> );
+Query OK, 1 row affected (0.06 sec)
+```
+
+2) 插入数据
+
+```
+
+INSERT INTO classtab 
+(
+Name, 
+Class
+) 
+VALUES 
+('Tom', 
+'B');
+
+INSERT INTO classtab 
+(
+Name, 
+Class,
+Score
+) 
+VALUES 
+('Tom2', 
+'B', 
+'93');
+
+INSERT INTO classtab 
+(
+Name, 
+Class,
+Score
+) 
+VALUES 
+('Tom22', 
+'B', 
+'93');
+
+INSERT INTO classtab 
+(
+Name, 
+Class,
+Score
+) 
+VALUES 
+('Tom6', 
+'B', 
+'90');
+```
+
+
+```
+...
+mysql> INSERT INTO classtab
+    -> (
+    -> Name,
+    -> Class,
+    -> Score
+    -> )
+    -> VALUES
+    -> ('Tom6',
+    -> 'B',
+    -> '90');
+Query OK, 1 row affected (0.01 sec)
+```
+
+3) 查询数据
+
+```
+SELECT * from classtab;
+```
+
+
+```
++-------+-------+-------+
+| Name  | Class | Score |
++-------+-------+-------+
+| Tom   | B     |       |
+| Tom2  | B     | 93    |
+| Tom22 | B     | 93    |
+| Tom6  | B     | 90    |
++-------+-------+-------+
+4 rows in set (0.00 sec)
+
+```
+
+4) 更新数据
+
+```
+UPDATE classtab  SET Score='78' WHERE Name='Tom2';
+```
+
+
+```
+mysql> UPDATE classtab  SET Score='78' WHERE Name='Tom2';
+Query OK, 1 row affected, 1 warning (0.00 sec)
+
+mysql> SELECT * from classtab;
++-------+-------+-------+
+| Name  | Class | Score |
++-------+-------+-------+
+| Tom   | B     |       |
+| Tom2  | B     | 78    |
+| Tom22 | B     | 93    |
+| Tom6  | B     | 90    |
++-------+-------+-------+
+4 rows in set (0.00 sec)
+
+```
+
+5) LIKE 查询
+
+```
+SELECT * from classtab WHERE Name LIKE 'Tom2%' limit 10;
+```
+
+```
+mysql> SELECT * from classtab WHERE Name LIKE 'Tom2%' limit 10;
++-------+-------+-------+
+| Name  | Class | Score |
++-------+-------+-------+
+| Tom2  | B     | 78    |
+| Tom22 | B     | 93    |
++-------+-------+-------+
+2 rows in set (0.00 sec)
+```
+
+6) 范围查询大于
+
+```
+SELECT * from classtab WHERE Name > 'Tom2' limit 10;
+```
+
+```
+mysql> SELECT * from classtab WHERE Name > 'Tom2' limit 10;
++-------+-------+-------+
+| Name  | Class | Score |
++-------+-------+-------+
+| Tom22 | B     | 93    |
+| Tom6  | B     | 90    |
++-------+-------+-------+
+2 rows in set (0.03 sec)
+```
+
+7)  = 查询
+
+
+```
+SELECT * from classtab WHERE Name = 'Tom22';
+```
+
+```
+mysql> SELECT * from classtab WHERE Name = 'Tom22';
++-------+-------+-------+
+| Name  | Class | Score |
++-------+-------+-------+
+| Tom22 | B     | 93    |
++-------+-------+-------+
+1 row in set (0.00 sec)
+```
+
+8) 删除数据
+
+```
+DELETE FROM classtab WHERE Name='Tom';
+```
+
+```
+mysql> DELETE FROM classtab WHERE Name='Tom';
+Query OK, 1 row affected, 1 warning (0.04 sec)
+
+mysql> SELECT * from classtab WHERE Name = 'Tom';
+Empty set (0.01 sec)
+```
+
+### 性能测试
+
+v0.1 实现有点粗糙、但是由于持久内存的优势，插入性能还是优于单机版的 MySQL，以及单机集群版本的 TiDB
+
+- 2个线程插入 TPS
+
+![2个线程插入TPS](benchmark/insert_tps.png)
+
+
+- 2个线程插入响应耗时
+
+![2个线程插入耗时](benchmark/insert_response.png)
