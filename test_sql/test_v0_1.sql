@@ -58,7 +58,7 @@ DELETE FROM classtab WHERE Name='Tom';
 
 SELECT * from classtab WHERE Name = 'Tom';
 
-SELECT * from classtab WHERE Name > 'Tom' limit 10;
+SELECT * from classtab WHERE Name > 'Tom2' limit 10;
 
 INSERT INTO classtab 
 (
@@ -72,14 +72,3 @@ VALUES
 '90');
 
 SELECT * from classtab WHERE Name LIKE 'Tom%' limit 10;
-
-create table benchyou2 (
-							id int not null,
-							k int not null,
-							c varchar(120) not null,
-							pad varchar(60) not null,
-							primary key (id)
-							);
-
-./bin/benchyou --mysql-host=127.0.0.1 --mysql-user=root --mysql-password=test --mysql-port 12306 --oltp-tables-count=64 prepare
-
