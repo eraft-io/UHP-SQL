@@ -26,27 +26,16 @@ bool Executor::AnalyzeCreateTableStatement(const hsql::CreateStatement* stmt,
                                            std::vector<TableColumn>& col_defs) {
   // parse create stmt
   tab_name = std::string(stmt->tableName);
-  std::cout << "analyze create table " << std::endl;
-  std::cout << "col size " << stmt->columns->size() << std::endl;
-  // std::cout << "col 2 " << std::string(*stmt->columns[1]->name) << std::endl;
-
   for (size_t i = 0; i < stmt->columns->size(); i++) {
-    std::cout << "col " << std::string((*stmt->columns)[i]->name) << std::endl;
-    std::cout << "col type "
-              << std::to_string(
-                     DataType2Int((*stmt->columns)[i]->type.data_type))
-              << std::endl;
     TableColumn colDef(std::string((*stmt->columns)[i]->name),
                        (*stmt->columns)[i]->type.data_type);
     col_defs.push_back(std::move(colDef));
   }
-
   return true;
 }
 
 uint64_t Executor::CreateTableMetaToPMemKV(std::string& tab_name,
                                            std::vector<TableColumn>& col_defs) {
-  // if not success return 0
   Executor::dbmsContext->GetCurDB()->CreateTable(tab_name, col_defs);
   return 1;
 }

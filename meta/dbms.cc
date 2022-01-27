@@ -53,6 +53,14 @@ bool DBMS::OpenDataBase(std::string db_name) {
   }
 }
 
+bool DBMS::HasTable(std::string tab_name) {
+  DataTable* resTable = cur_db_->GetTable(tab_name);
+  if(resTable == nullptr) {
+    return false;
+  }
+  return true;
+}
+
 bool DBMS::DropDataBase(std::string db_name) {
   std::unordered_map<std::string, DataBase*>::iterator iter;
   iter = dbs_.find(db_name);
