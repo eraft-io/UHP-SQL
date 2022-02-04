@@ -23,7 +23,7 @@ bool Executor::AnalyzeInsertStatement(const hsql::InsertStatement* stmt,
                                       std::vector<TableColumn>& result_set) {
   tab_name = std::string(stmt->tableName);
   // check if table exists
-  if(!Executor::dbmsContext->HasTable(tab_name)) {
+  if (!Executor::dbmsContext->HasTable(tab_name)) {
     return false;
   }
   std::vector<std::string> columnNames;
@@ -59,12 +59,17 @@ uint64_t Executor::InsertRowToPMemKV(std::string& tab_name,
   std::string dbName = Executor::dbmsContext->GetCurDB()->GetDbName();
   std::string key = "data_" + dbName + "_" + tab_name + "_p_" + row[0].GetVal();
   std::vector<std::string> vals;
-  vals.resize(row.size());
+  auto dataTable = Executor::dbmsContext->GetCurDB()->GetTable(tab_name);
+  vals.resize(dataTable->GetColCount());
   for (auto& col : row) {
-    uint64_t index =
-        Executor::dbmsContext->GetCurDB()->GetTable(tab_name)->GetColIndex(
+    uint64_t index = dataTable->GetColIndex(
             col.GetColName());
     vals[index] = col.GetVal();
+  }
+  for (auto& val : vals) {
+    if (val.empty()) {
+      val = "NULL";
+    }
   }
   std::string value = StringsJoin(vals, "$$");
   auto reply = static_cast<redisReply*>(redisCommand(
